@@ -246,7 +246,7 @@ h1 {
 .section-instruction {
     text-align: center;
     font-family: 'Outfit', sans-serif;
-    color: var(--text-dim); /* Changé de orange à gris sombre (sobre) */
+    color: var(--text-dim); 
     font-size: 14px;
     margin-bottom: 24px;
     font-weight: 500;
@@ -382,7 +382,7 @@ h1 {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: var(--text-dim); /* COULEUR SOBRE (Gris) au lieu de l'accent */
+    color: var(--text-dim); 
     display: flex;
     align-items: center;
     gap: 8px;
@@ -401,9 +401,8 @@ h1 {
     transition: transform 0.3s ease;
 }
 
-/* Au survol, on peut remettre un peu de couleur si on veut, ou garder sobre */
 .project-card:hover .details-link-hint {
-    color: var(--text); /* Devient noir au survol */
+    color: var(--text); 
 }
 
 .project-card:hover .details-link-hint::after {
@@ -907,4 +906,133 @@ h1 {
         width: 100%;
         justify-content: flex-start;
     }
+}
+
+/* --- LOADERS (MIS À JOUR) --- */
+
+/* 1. Loader Global (Plein écran) */
+#global-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+
+#global-loader.fade-out {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.loader-content {
+    text-align: center;
+    font-family: 'Space Mono', monospace;
+    color: var(--text);
+    width: 100%;
+    max-width: 400px; /* Largeur max de la barre */
+    padding: 0 20px;
+}
+
+/* --- BARRE DE PROGRESSION AVEC AVION --- */
+.progress-wrapper {
+    position: relative;
+    width: 100%;
+    height: 10px;
+    margin-bottom: 20px;
+    background: rgba(10, 10, 10, 0.05); /* Fond léger pour contraste */
+    border-radius: 5px; /* Arrondi */
+}
+
+/* Le fond gris de la barre */
+.progress-track {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 10, 10, 0.1);
+    border-radius: 5px;
+}
+
+/* La barre qui se remplit (noir) */
+.progress-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0%; /* JS contrôlera ça */
+    height: 100%;
+    background: var(--text);
+    transition: width 0.1s linear; /* Transition fluide */
+    border-radius: 5px;
+}
+
+/* L'avion qui suit le bout de la barre */
+.progress-plane {
+    position: absolute;
+    top: 50%;
+    left: 0%; /* JS contrôlera ça aussi */
+    transform: translate(-50%, -50%) rotate(90deg); /* 90deg pour pointer vers la droite */
+    color: var(--text);
+    transition: left 0.1s linear;
+    width: 60px; /* BEAUCOUP PLUS GROS (était 32px) */
+    height: 60px;
+    z-index: 10;
+    /* Stylisation : Ombre portée pour l'effet de vol */
+    filter: drop-shadow(0px 10px 15px rgba(0, 0, 0, 0.2));
+}
+
+.progress-plane svg {
+    width: 100%;
+    height: 100%;
+}
+
+#loading-text {
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+/* 2. Loader Modale (Local) */
+.modal-loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10; 
+    display: flex; 
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 8px;
+    pointer-events: none; 
+}
+
+.spinner-small {
+    width: 30px;
+    height: 30px;
+    border: 2px solid rgba(10, 10, 10, 0.1);
+    border-top: 2px solid var(--accent-blue);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.modal-loader span {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }

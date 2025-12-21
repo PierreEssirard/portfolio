@@ -28,14 +28,64 @@ const dirLight = new THREE.DirectionalLight(0xffffff, 2);
 dirLight.position.set(5, 10, 7);
 scene.add(dirLight);
 
-// --- 5. Chargement du Modèle ---
+// --- 5. Chargement du Modèle & Logique de Barre de Progression ---
 let rafale;
 const baseScale = 0.6; 
-
-// Départ à DROITE (positif)
 const startPositionX = 4; 
 
+// Éléments du DOM pour le loader
+const globalLoader = document.getElementById('global-loader');
+const progressBar = document.getElementById('progress-bar');
+const progressPlane = document.getElementById('progress-plane');
+const loadingText = document.getElementById('loading-text');
+
+// États de chargement
+let isModelLoaded = false;
+let isTimeElapsed = false;
+
+// --- LOGIQUE MINUTERIE 5 SECONDES (MODIFIÉ) ---
+const duration = 2000; // 2000 ms = 2 secondes
+const intervalTime = 50; // Mise à jour toutes les 50ms pour fluidité
+const step = 100 / (duration / intervalTime); // Pourcentage à ajouter par tick
+let currentProgress = 0;
+
+const timer = setInterval(() => {
+    currentProgress += step;
+    
+    // Plafond à 100%
+    if (currentProgress >= 100) {
+        currentProgress = 100;
+        isTimeElapsed = true;
+        clearInterval(timer); // Arrêt de la minuterie
+        checkLoadComplete();  // On vérifie si on peut fermer
+    }
+
+    // Mise à jour visuelle
+    updateLoaderUI(currentProgress);
+
+}, intervalTime);
+
+function updateLoaderUI(percent) {
+    if (progressBar) progressBar.style.width = `${percent}%`;
+    if (progressPlane) progressPlane.style.left = `${percent}%`;
+    if (loadingText) loadingText.innerText = `Initialisation des systèmes... ${Math.round(percent)}%`;
+}
+
+// Fonction finale de fermeture
+function checkLoadComplete() {
+    // Il faut que les DEUX conditions soient vraies
+    if (isModelLoaded && isTimeElapsed) {
+        if (globalLoader) {
+            setTimeout(() => {
+                globalLoader.classList.add('fade-out');
+            }, 500); // Petit délai bonus pour la douceur
+        }
+    }
+}
+
+// --- CHARGEMENT RÉEL THREE.JS ---
 const loader = new GLTFLoader();
+
 loader.load(
     'dassault_rafale.glb', 
     (gltf) => {
@@ -44,19 +94,22 @@ loader.load(
         rafale.scale.set(baseScale, baseScale, baseScale);
         rafale.position.set(startPositionX, 0, 0); 
         
-        // --- ORIENTATION VERS LA GAUCHE (CORRECTION) ---
-        // On inverse la rotation : 0 au lieu de Math.PI
-        // Cela devrait faire pointer le nez vers la gauche
         rafale.rotation.y = 1; 
-        
-        rafale.rotation.x = 1; // Légère inclinaison
+        rafale.rotation.x = 1; 
         rafale.rotation.z = 0;
 
         scene.add(rafale);
+
+        // Le modèle est prêt !
+        isModelLoaded = true;
+        checkLoadComplete(); 
     },
     undefined,
     (error) => {
         console.error('Erreur chargement modèle:', error);
+        // En cas d'erreur, on force la fin pour ne pas bloquer l'utilisateur éternellement
+        isModelLoaded = true;
+        checkLoadComplete();
     }
 );
 
@@ -79,11 +132,9 @@ function animate() {
         rafale.position.y = Math.sin(time * 1.2) * 0.08; 
         
         // --- B. Traversée DROITE -> GAUCHE ---
-        // Le mouvement reste le même : il part de la droite et va vers la gauche
         rafale.position.x = startPositionX - (scrollY * 0.015);
         
-        // --- C. Rotation sur lui-même (Effet Tonneau / Roulis) ---
-        // On conserve l'orientation Y vers la gauche
+        // --- C. Rotation sur lui-même ---
         rafale.rotation.y = 0; 
         
     }

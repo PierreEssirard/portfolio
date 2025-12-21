@@ -6,8 +6,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModal = document.querySelector('.close-modal');
     const modalHeader = document.querySelector('.modal-header h2');
     const mapControls = document.querySelector('.map-controls');
-    // On sélectionne la phrase d'instruction pour pouvoir la cacher/montrer
     const modalInstruction = document.querySelector('.modal-instruction');
+    
+    // NOUVEAU : Référence au loader de la modale
+    const modalLoader = document.getElementById('modal-loader');
 
     // ---------------------------------------------------------
     // 1. CONFIGURATION SCROLL OBSERVER (ANIMATIONS D'APPARITION)
@@ -132,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ---------------------------------------------------------
-    // 4. GESTION DU MODAL (VIDÉO VS IFRAME)
+    // 4. GESTION DU MODAL (VIDÉO VS IFRAME) & LOADER
     // ---------------------------------------------------------
     
     function clearModalContent() {
@@ -153,6 +155,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         modal.style.display = 'flex';
         
+        // AFFICHER LE LOADER PAR DÉFAUT
+        if (modalLoader) modalLoader.style.display = 'flex';
+
         setTimeout(() => {
             modal.classList.add('show');
             
@@ -160,7 +165,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 // --- MODE VIDÉO (ANDROID) ---
                 if (modalHeader) modalHeader.innerText = "Démonstration (Vidéo)";
                 
-                // On CACHE les contrôles et l'instruction pour la vidéo
                 if (mapControls) mapControls.style.display = 'none';
                 if (modalInstruction) modalInstruction.style.display = 'none';
                 
@@ -177,17 +181,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 video.style.outline = "none";
                 video.style.background = "#000"; 
                 
+                // --- ÉVÉNEMENT CHARGEMENT VIDÉO ---
+                video.onloadeddata = () => {
+                    if (modalLoader) modalLoader.style.display = 'none';
+                };
+                
+                // Sécurité
+                setTimeout(() => { if(modalLoader) modalLoader.style.display = 'none'; }, 3000);
+
                 modalFrame.parentNode.insertBefore(video, modalFrame);
                 
             } else {
                 // --- MODE IFRAME (CARTES DATA) ---
                 if (modalHeader) modalHeader.innerText = "Visualisation Interactive";
                 
-                // On AFFICHE les contrôles et l'instruction pour les cartes
-                if (mapControls) mapControls.style.display = 'flex'; // Flex pour bien aligner les boutons
+                if (mapControls) mapControls.style.display = 'flex'; 
                 if (modalInstruction) modalInstruction.style.display = 'block';
                 
+                // Cache iframe pour éviter l'écran blanc moche au chargement
+                modalFrame.style.opacity = "0"; 
                 modalFrame.style.display = 'block';
+                
+                // --- ÉVÉNEMENT CHARGEMENT IFRAME ---
+                modalFrame.onload = () => {
+                    modalFrame.style.transition = "opacity 0.5s ease";
+                    modalFrame.style.opacity = "1";
+                    if (modalLoader) modalLoader.style.display = 'none';
+                };
+
                 modalFrame.src = contentSrc;
             }
         }, 10);
@@ -221,12 +242,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     window.changeMap = function(url) {
-        // En cas de changement manuel, on s'assure qu'on n'a pas de vidéo qui traîne
         const existingVideo = document.getElementById('dynamic-video');
         if (existingVideo) existingVideo.remove();
         
+        // RE-AFFICHER LE LOADER POUR LE CHANGEMENT DE CARTE
+        if (modalLoader) modalLoader.style.display = 'flex';
+        
+        modalFrame.style.opacity = "0";
         modalFrame.style.display = 'block';
         modalFrame.src = url;
+
+        // On redéfinit onload pour être sûr (cas de changement manuel)
+        modalFrame.onload = () => {
+            modalFrame.style.opacity = "1";
+            if (modalLoader) modalLoader.style.display = 'none';
+        }
     };
 
     // ---------------------------------------------------------

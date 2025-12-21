@@ -18,9 +18,28 @@
 </head>
 <body>
 
+    <!-- 1. LOADER GLOBAL AVEC PROGRESSION & AVION -->
+    <div id="global-loader">
+        <div class="loader-content">
+            <!-- Zone de la barre -->
+            <div class="progress-wrapper">
+                <div class="progress-track"></div>
+                <div class="progress-bar" id="progress-bar"></div>
+                <!-- Icône Avion qui suivra la barre -->
+                <div class="progress-plane" id="progress-plane">
+                    <!-- SVG simple d'un avion de chasse vu de dessus -->
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="24px" height="24px">
+                        <path d="M21,16V14L13,9V3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5V9L2,14V16L10,13.5V19L8,20.5V22L11.5,21L15,22V20.5L13,19V13.5L21,16Z"/>
+                    </svg>
+                </div>
+            </div>
+            
+            <p id="loading-text">Initialisation des systèmes... 0%</p>
+        </div>
+    </div>
+
     <nav>
         <div class="container">
-            <!-- Modification du logo en initiales -->
             <div class="logo">EP</div>
             <ul>
                 <li><a href="#hero">Accueil</a></li>
@@ -44,7 +63,6 @@
             </div>
         </div>
 
-        <!-- INDICATEUR DE SCROLL AJOUTÉ -->
         <div class="scroll-indicator">
             <span class="scroll-text">Défiler vers le bas</span>
             <div class="scroll-arrow">↓</div>
@@ -54,27 +72,22 @@
     <section id="portfolio">
         <h2 class="section-title">Mes Projets</h2>
         
-        <!-- INSTRUCTION EXPLICITE AJOUTÉE -->
         <p class="section-instruction">👇 Cliquez sur une carte ci-dessous pour voir les détails et accéder aux démos</p>
 
-        <!-- Grille du carrousel -->
         <div class="projects-grid" id="projects-container">
             <!-- Les projets sont injectés ici par JS -->
         </div>
 
-        <!-- Conteneur pour l'affichage détaillé -->
         <div id="project-details" class="details-container" style="display: none;">
             <!-- Le contenu sera injecté ici par JS -->
         </div>
     </section>
 
-    <!-- SECTION EXPÉRIENCE (Timeline) -->
     <section id="experience">
         <h2 class="section-title">Expérience Pro</h2>
         
         <div class="timeline-container">
             
-            <!-- Item 1 : Apprentissage Safran -->
             <div class="timeline-item">
                 <div class="timeline-marker"></div>
                 <div class="timeline-content">
@@ -98,7 +111,6 @@
                 </div>
             </div>
 
-            <!-- Item 2 : Stage Safran (DUT) -->
             <div class="timeline-item">
                 <div class="timeline-marker"></div>
                 <div class="timeline-content">
@@ -143,12 +155,16 @@
         <p class="copyright">© 2024 – Pierre Essirard</p>
     </footer>
 
-    <!-- MODAL POUR LES CARTES INTERACTIVES -->
+    <!-- MODAL -->
     <div id="map-modal" class="modal">
         <div class="modal-content">
-            <!-- Bouton fermer explicite -->
             <div class="close-modal"></div>
             
+            <div id="modal-loader" class="modal-loader">
+                <div class="spinner-small"></div>
+                <span>Chargement des données...</span>
+            </div>
+
             <div class="modal-header">
                 <div>
                     <h2>Visualisation Interactive</h2>
@@ -168,7 +184,6 @@
         </div>
     </div>
 
-    <!-- SCRIPTS DANS LE DOSSIER JS/ -->
     <script src="js/project.js"></script>
     <script src="js/script.js"></script>
     <script type="module" src="js/rafale.js"></script>

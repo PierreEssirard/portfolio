@@ -8,11 +8,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const mapControls = document.querySelector('.map-controls');
     const modalInstruction = document.querySelector('.modal-instruction');
     
-    // NOUVEAU : Référence au loader de la modale
+    // Référence au loader de la modale
     const modalLoader = document.getElementById('modal-loader');
 
     // ---------------------------------------------------------
-    // 1. CONFIGURATION SCROLL OBSERVER (ANIMATIONS D'APPARITION)
+    // 1. CONFIGURATION SCROLL OBSERVER
     // ---------------------------------------------------------
     const observerOptions = {
         threshold: 0.1,
@@ -28,24 +28,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }, observerOptions);
 
-    // Palette de couleurs pour les projets
     const projectColors = ['#4A90E2', '#FF6B6B', '#F5A623', '#2E7D32'];
 
     // ---------------------------------------------------------
-    // 2. GÉNÉRATION DES PROJETS EN GRILLE
+    // 2. GÉNÉRATION DES PROJETS
     // ---------------------------------------------------------
     if (typeof myProjects !== 'undefined') {
-        container.innerHTML = ''; // Nettoyage
+        container.innerHTML = ''; 
         
         myProjects.forEach((project, index) => {
             const card = document.createElement('div');
             card.classList.add('project-card');
             
-            // Animation
             card.classList.add('reveal-on-scroll');
             scrollObserver.observe(card);
 
-            // Couleur unique
             const accentColor = projectColors[index % projectColors.length];
             card.style.setProperty('--accent-color', accentColor);
 
@@ -71,11 +68,11 @@ document.addEventListener('DOMContentLoaded', () => {
             container.appendChild(card);
         });
     } else {
-        console.error("Erreur: La variable 'myProjects' n'est pas définie (vérifiez project.js).");
+        console.error("Erreur: La variable 'myProjects' n'est pas définie.");
     }
 
     // ---------------------------------------------------------
-    // 3. FONCTION POUR AFFICHER LES DÉTAILS
+    // 3. FONCTION DÉTAILS
     // ---------------------------------------------------------
     function showProjectDetails(project) {
         let interactiveSection = '';
@@ -84,9 +81,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const btnLabel = project.buttonText || "Voir la visualisation";
             const contentType = project.type || 'iframe'; 
             
-            // Gestion de l'affichage du petit texte d'aide en dessous du bouton
-            const helperTextHTML = contentType === 'video' 
-                ? '' // Pas d'indication pour la vidéo
+            const helperTextHTML = (contentType === 'video' || contentType === 'image')
+                ? '' 
                 : `<p style="font-size: 0.75rem; color: #888; margin-top: 10px; text-align: center;">Mode interactif disponible</p>`;
 
             interactiveSection = `
@@ -134,13 +130,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ---------------------------------------------------------
-    // 4. GESTION DU MODAL (VIDÉO VS IFRAME) & LOADER
+    // 4. GESTION DU MODAL (VIDEO / IMAGE / IFRAME)
     // ---------------------------------------------------------
     
     function clearModalContent() {
         if (modalFrame) {
-            modalFrame.src = ""; // Arrête l'iframe
-            modalFrame.style.display = 'none'; // Cache par défaut
+            modalFrame.src = ""; 
+            modalFrame.style.display = 'none'; 
         }
         
         const existingVideo = document.getElementById('dynamic-video');
@@ -148,61 +144,71 @@ document.addEventListener('DOMContentLoaded', () => {
             existingVideo.pause();
             existingVideo.remove();
         }
+
+        // Nettoyage de l'image aussi
+        const existingImg = document.getElementById('dynamic-image');
+        if (existingImg) existingImg.remove();
     }
 
     function openModal(contentSrc, type) {
-        clearModalContent(); // Reset avant ouverture
+        clearModalContent(); 
         
         modal.style.display = 'flex';
-        
-        // AFFICHER LE LOADER PAR DÉFAUT
         if (modalLoader) modalLoader.style.display = 'flex';
 
         setTimeout(() => {
             modal.classList.add('show');
             
             if (type === 'video') {
-                // --- MODE VIDÉO (ANDROID) ---
+                // --- MODE VIDÉO ---
                 if (modalHeader) modalHeader.innerText = "Démonstration (Vidéo)";
-                
                 if (mapControls) mapControls.style.display = 'none';
                 if (modalInstruction) modalInstruction.style.display = 'none';
                 
-                // Création dynamique du lecteur vidéo
                 const video = document.createElement('video');
                 video.id = 'dynamic-video';
                 video.src = contentSrc;
                 video.controls = true;
                 video.autoplay = true;
-                
                 video.style.width = "100%";
                 video.style.height = "100%";
                 video.style.objectFit = "contain"; 
                 video.style.outline = "none";
                 video.style.background = "#000"; 
                 
-                // --- ÉVÉNEMENT CHARGEMENT VIDÉO ---
-                video.onloadeddata = () => {
-                    if (modalLoader) modalLoader.style.display = 'none';
-                };
-                
-                // Sécurité
+                video.onloadeddata = () => { if (modalLoader) modalLoader.style.display = 'none'; };
                 setTimeout(() => { if(modalLoader) modalLoader.style.display = 'none'; }, 3000);
-
                 modalFrame.parentNode.insertBefore(video, modalFrame);
                 
-            } else {
-                // --- MODE IFRAME (CARTES DATA) ---
-                if (modalHeader) modalHeader.innerText = "Visualisation Interactive";
+            } else if (type === 'image') {
+                // --- MODE IMAGE (NOUVEAU) ---
+                if (modalHeader) modalHeader.innerText = "Aperçu de la Maquette";
+                if (mapControls) mapControls.style.display = 'none';
+                if (modalInstruction) modalInstruction.style.display = 'none';
+
+                const img = document.createElement('img');
+                img.id = 'dynamic-image';
+                img.src = contentSrc;
+                img.style.width = "100%";
+                img.style.height = "100%";
+                img.style.objectFit = "contain"; // Garde les proportions
+                img.style.display = "block";
                 
+                // Gestion du chargement de l'image
+                img.onload = () => { if (modalLoader) modalLoader.style.display = 'none'; };
+                setTimeout(() => { if(modalLoader) modalLoader.style.display = 'none'; }, 3000);
+
+                modalFrame.parentNode.insertBefore(img, modalFrame);
+
+            } else {
+                // --- MODE IFRAME ---
+                if (modalHeader) modalHeader.innerText = "Visualisation Interactive";
                 if (mapControls) mapControls.style.display = 'flex'; 
                 if (modalInstruction) modalInstruction.style.display = 'block';
                 
-                // Cache iframe pour éviter l'écran blanc moche au chargement
                 modalFrame.style.opacity = "0"; 
                 modalFrame.style.display = 'block';
                 
-                // --- ÉVÉNEMENT CHARGEMENT IFRAME ---
                 modalFrame.onload = () => {
                     modalFrame.style.transition = "opacity 0.5s ease";
                     modalFrame.style.opacity = "1";
@@ -244,24 +250,21 @@ document.addEventListener('DOMContentLoaded', () => {
     window.changeMap = function(url) {
         const existingVideo = document.getElementById('dynamic-video');
         if (existingVideo) existingVideo.remove();
+        const existingImg = document.getElementById('dynamic-image');
+        if (existingImg) existingImg.remove();
         
-        // RE-AFFICHER LE LOADER POUR LE CHANGEMENT DE CARTE
         if (modalLoader) modalLoader.style.display = 'flex';
         
         modalFrame.style.opacity = "0";
         modalFrame.style.display = 'block';
         modalFrame.src = url;
 
-        // On redéfinit onload pour être sûr (cas de changement manuel)
         modalFrame.onload = () => {
             modalFrame.style.opacity = "1";
             if (modalLoader) modalLoader.style.display = 'none';
         }
     };
 
-    // ---------------------------------------------------------
-    // 5. NAVIGATION FLUIDE (SMOOTH SCROLL)
-    // ---------------------------------------------------------
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
@@ -272,9 +275,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // ---------------------------------------------------------
-    // 6. ACTIVATION OBSERVER SUR LES ÉLÉMENTS STATIQUES
-    // ---------------------------------------------------------
     const staticElements = document.querySelectorAll('.section-title, .timeline-item, .contact-grid, .hero-content > *');
     staticElements.forEach(el => {
         el.classList.add('reveal-on-scroll');

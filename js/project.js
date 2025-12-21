@@ -27,12 +27,29 @@ const myProjects = [
             "Travail collaboratif sous Git : Gestion des conflits de fusion et versionnement en équipe."
         ],
         tech: ["Java", "Android Studio", "XML Layouts", "Git", "Design Patterns"],
-        
-        // Configuration Vidéo
         interactiveMap: "assets/demo_game.mp4", 
         type: "video",
         buttonText: "Voir la démo vidéo",
         imageText: "▶️ Voir le gameplay (3 jeux)",
         githubLink: "" 
+    },
+    {
+        title: "Smart FARM - Domotique Embarquée sur STM32",
+        description: "Ce projet de systèmes embarqués (Microprocesseurs avancés), réalisé en binôme, visait à concevoir une maquette de ferme connectée entièrement autonome pilotée par un microcontrôleur STM32. L'objectif était d'automatiser la gestion de l'environnement agricole (climat, sécurité, accès) en exploitant les périphériques matériels bas niveau sans OS. Nous avons développé une architecture logicielle modulaire en C capable de gérer des interruptions temps réel et de multiples protocoles de communication.<br><br><strong>Fonctionnalités clés implémentées :</strong><br>• <strong>Régulation Climatique (THCS) :</strong> Lecture I2C d'un capteur AHT20 (Temp/Hum). Si la température dépasse 24°C, un ventilateur s'active avec une vitesse proportionnelle à la chaleur (PWM sur Timer 10).<br>• <strong>Sécurité & Alarme :</strong> Détection d'intrusion par capteur PIR via interruption externe (EXTI) déclenchant une alarme sonore (Buzzer) et visuelle.<br>• <strong>Smart Feeding & Accès :</strong> Une trappe motorisée (Servomoteur) s'ouvre/ferme intelligemment selon l'humidité (ADC Pluie) ou la commande manuelle, avec une sécurité anti-pincement par ultrasons (Timer 4).<br>• <strong>Monitoring :</strong> Affichage en temps réel des constantes sur écran LCD I2C et journalisation via liaison série UART.",
+        highlights: [
+            "Programmation bas niveau en C sur STM32 (Gestion directe des registres et HAL).",
+            "Mise en œuvre des protocoles de communication série : I2C (Capteurs, LCD) et UART (Debug).",
+            "Gestion avancée des Timers : PWM pour servomoteurs/ventilateurs et mesure de signal (Ultrasons).",
+            "Acquisition de données : ADC multi-canaux (Luminosité, Pluie) et interruptions matérielles (EXTI).",
+            "Logique de contrôle-commande : Asservissement proportionnel et machines à états."
+        ],
+        tech: ["C / C++", "STM32", "CubeIDE", "I2C / UART / PWM", "Hardware"],
+        
+        // Configuration Image
+        interactiveMap: "assets/femre.jpg",
+        type: "image", // Nouveau type pour gérer la photo
+        buttonText: "Voir la maquette",
+        imageText: "📷 Photo du montage disponible",
+        githubLink: ""
     }
 ];

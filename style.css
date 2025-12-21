@@ -264,9 +264,9 @@ h1 {
     font-style: italic;
 }
 
-/* ========== PORTFOLIO GRID ========== */
+/* ========== PORTFOLIO CARROUSEL ========== */
 #portfolio {
-    padding: 120px 48px 100px;
+    padding: 120px 0 100px; /* Moins de padding sur les côtés pour le carrousel */
     background: var(--primary);
     overflow: hidden;
     min-height: 100vh;
@@ -281,18 +281,66 @@ h1 {
     color: #000000;
 }
 
-/* Grille minimaliste */
-.projects-grid {
-    width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-    gap: 24px;
-    padding: 0 20px;
+/* --- INDICATEUR DE COMPTEUR --- */
+.project-counter-badge {
+    text-align: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    margin-bottom: 15px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    background: #fff;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 20px;
 }
 
-/* Cartes de projet élégantes */
+/* -- NOUVEAU STYLE CARROUSEL -- */
+.carousel-view {
+    width: 100%;
+    overflow: hidden;
+    padding: 40px 0; /* Plus d'espace pour l'effet de flottement */
+    /* Masque pour effet de fondu sur les bords */
+    mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+}
+
+.carousel-track {
+    display: flex;
+    gap: 30px; /* Espace entre les cartes */
+    width: max-content; /* S'adapte au contenu */
+    /* Animation de défilement infinie */
+    animation: scroll 40s linear infinite; 
+    padding: 20px 0; /* Espace pour l'ombre au survol */
+}
+
+/* Pause au survol pour pouvoir cliquer tranquillement */
+.carousel-track:hover {
+    animation-play-state: paused;
+}
+
+/* ANIMATION SCROLL INVERSÉE (Gauche -> Droite) */
+@keyframes scroll {
+    /* On commence à -50% (on voit le 2ème jeu de cartes)
+       Et on va vers 0% (on voit le 1er jeu de cartes)
+       Cela crée un mouvement vers la DROITE.
+    */
+    0% { transform: translateX(-50%); }
+    100% { transform: translateX(0); }
+}
+
+/* ANIMATION FLOTTANTE (APESANTEUR) */
+@keyframes floatCard {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); } /* Flotte de 15px vers le haut */
+}
+
+/* Style des cartes adapté au carrousel */
 .project-card {
     position: relative;
     background: var(--bg-card);
@@ -301,10 +349,21 @@ h1 {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-height: 400px;
+    
+    /* Dimensions fixes pour le carrousel */
+    min-width: 400px;
+    width: 400px;
+    height: 450px;
+    
+    flex-shrink: 0; /* Empêche le rétrécissement */
+    
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
     overflow: hidden;
+    border-radius: 4px; /* Un peu d'arrondi */
+
+    /* APPLIQUER L'ANIMATION DE FLOTTEMENT PAR DÉFAUT */
+    animation: floatCard 6s ease-in-out infinite;
 }
 
 .project-card::before {
@@ -324,9 +383,13 @@ h1 {
 }
 
 .project-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 60px rgba(37, 99, 235, 0.15);
+    /* Au survol, on "attrape" la carte, donc on arrête le flottement 
+       et on la soulève légèrement de manière fixe */
+    animation-play-state: paused;
+    transform: translateY(-8px) scale(1.02); 
+    box-shadow: 0 20px 60px rgba(10, 10, 10, 0.1);
     border-color: var(--accent-color);
+    z-index: 5;
 }
 
 .project-number {
@@ -413,7 +476,7 @@ h1 {
 .details-container {
     width: 90%;
     max-width: 1000px;
-    margin: 180px auto 0;
+    margin: 40px auto 0; /* Moins de marge haut car sous le carrousel */
     background: var(--bg-card);
     border: 1px solid var(--border);
     padding: 80px;
@@ -863,15 +926,12 @@ h1 {
         font-size: 48px;
     }
 
-    .projects-grid {
-        grid-template-columns: 1fr;
-        gap: 20px;
-        padding: 0 15px;
-    }
-    
+    /* Ajustement responsive pour le carrousel */
     .project-card {
-        min-height: 350px;
-        padding: 40px 32px;
+        min-width: 300px; /* Plus petit sur mobile */
+        width: 300px;
+        height: 400px;
+        padding: 30px;
     }
     
     .details-content {

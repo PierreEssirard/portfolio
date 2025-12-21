@@ -69,15 +69,26 @@
         </div>
     </section>
 
+    <!-- SECTION PORTFOLIO MODIFIÉE POUR LE CARROUSEL -->
     <section id="portfolio">
         <h2 class="section-title">Mes Projets</h2>
         
-        <p class="section-instruction">👇 Cliquez sur une carte ci-dessous pour voir les détails et accéder aux démos</p>
-
-        <div class="projects-grid" id="projects-container">
-            <!-- Les projets sont injectés ici par JS -->
+        <!-- NOUVEL INDICATEUR DE NOMBRE DE PROJETS -->
+        <div id="project-counter-badge" class="project-counter-badge">
+            <!-- Le texte sera injecté par JS -->
         </div>
 
+        <p class="section-instruction">👇 Survolez pour mettre en pause • Cliquez pour les détails</p>
+
+        <!-- Conteneur Vue (Masque) -->
+        <div class="carousel-view">
+            <!-- Piste animée (Contient les cartes) -->
+            <div class="carousel-track" id="projects-container">
+                <!-- Les projets sont injectés ici par JS (en double pour la boucle) -->
+            </div>
+        </div>
+
+        <!-- Conteneur pour l'affichage détaillé -->
         <div id="project-details" class="details-container" style="display: none;">
             <!-- Le contenu sera injecté ici par JS -->
         </div>
@@ -91,7 +102,7 @@
             <div class="timeline-item">
                 <div class="timeline-marker"></div>
                 <div class="timeline-content">
-                    <div class="timeline-date">Sept. 2024 - Présent</div>
+                    <div class="timeline-date">Sept. 2021 - Présent</div>
                     <h3 class="timeline-title">Apprenti Ingénieur - Systèmes Embarqués</h3>
                     <div class="timeline-company">Safran Electronics & Defense</div>
                     <p class="timeline-desc">
@@ -114,7 +125,7 @@
             <div class="timeline-item">
                 <div class="timeline-marker"></div>
                 <div class="timeline-content">
-                    <div class="timeline-date">Avril 2024 - Juin 2024</div>
+                    <div class="timeline-date">Avril 2021 - Juin 2021</div>
                     <h3 class="timeline-title">Stage Technicien - DUT GEII</h3>
                     <div class="timeline-company">Safran Electronics & Defense</div>
                     <p class="timeline-desc">
@@ -155,7 +166,6 @@
         <p class="copyright">© 2024 – Pierre Essirard</p>
     </footer>
 
-    <!-- MODAL -->
     <div id="map-modal" class="modal">
         <div class="modal-content">
             <div class="close-modal"></div>

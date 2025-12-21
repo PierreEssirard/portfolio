@@ -7,12 +7,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalHeader = document.querySelector('.modal-header h2');
     const mapControls = document.querySelector('.map-controls');
     const modalInstruction = document.querySelector('.modal-instruction');
-    
-    // Référence au loader de la modale
     const modalLoader = document.getElementById('modal-loader');
+    
+    // NOUVEAU: Récupération de l'élément du compteur
+    const projectCounterBadge = document.getElementById('project-counter-badge');
 
     // ---------------------------------------------------------
-    // 1. CONFIGURATION SCROLL OBSERVER
+    // 1. SCROLL OBSERVER
     // ---------------------------------------------------------
     const observerOptions = {
         threshold: 0.1,
@@ -28,26 +29,45 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }, observerOptions);
 
-    const projectColors = ['#4A90E2', '#FF6B6B', '#F5A623', '#2E7D32'];
+    // --- COULEURS MISES À JOUR (Palette Mate/Élégante) ---
+    // Bleu Ardoise, Rouge Antique, Ocre Doré, Vert Émeraude Profond
+    const projectColors = ['#334155', '#9F1239', '#92400E', '#065F46'];
 
     // ---------------------------------------------------------
-    // 2. GÉNÉRATION DES PROJETS
+    // 2. GÉNÉRATION DES PROJETS (CARROUSEL INFINI)
     // ---------------------------------------------------------
     if (typeof myProjects !== 'undefined') {
         container.innerHTML = ''; 
         
-        myProjects.forEach((project, index) => {
+        // MISE À JOUR DU COMPTEUR DE PROJETS
+        if (projectCounterBadge) {
+            projectCounterBadge.innerText = `${myProjects.length} PROJETS DISPONIBLES`;
+        }
+
+        // ASTUCE CARROUSEL : On double la liste des projets pour créer l'effet de boucle infinie
+        const displayProjects = [...myProjects, ...myProjects];
+        
+        displayProjects.forEach((project, index) => {
             const card = document.createElement('div');
             card.classList.add('project-card');
             
+            // On garde le reveal mais attention au carrousel (il bouge déjà)
+            // On l'ajoute juste pour l'effet d'apparition initial
             card.classList.add('reveal-on-scroll');
             scrollObserver.observe(card);
+
+            // --- AJOUT D'UN DÉLAI ALÉATOIRE POUR L'EFFET DE FLOTTEMENT ---
+            // Cela permet que les cartes ne flottent pas toutes en même temps
+            const randomDelay = Math.random() * 5; // Délai entre 0 et 5 secondes
+            card.style.animationDelay = `-${randomDelay}s`; // Délai négatif pour commencer l'animation tout de suite à un moment différent
 
             const accentColor = projectColors[index % projectColors.length];
             card.style.setProperty('--accent-color', accentColor);
 
             const shortTech = project.tech.slice(0, 3).map(t => `<span>${t}</span>`).join('');
-            const projectNumber = String(index + 1).padStart(2, '0');
+            // Calcul du vrai numéro (modulo la longueur originale)
+            const realIndex = index % myProjects.length;
+            const projectNumber = String(realIndex + 1).padStart(2, '0');
             const hintText = project.imageText ? project.imageText : "Explorer le projet";
 
             card.innerHTML = `
@@ -126,11 +146,12 @@ document.addEventListener('DOMContentLoaded', () => {
             detailsContainer.classList.add('visible');
         }, 10);
 
-        detailsContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Scroll doux vers les détails (juste en dessous du carrousel)
+        detailsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
     // ---------------------------------------------------------
-    // 4. GESTION DU MODAL (VIDEO / IMAGE / IFRAME)
+    // 4. GESTION DU MODAL
     // ---------------------------------------------------------
     
     function clearModalContent() {
@@ -145,7 +166,6 @@ document.addEventListener('DOMContentLoaded', () => {
             existingVideo.remove();
         }
 
-        // Nettoyage de l'image aussi
         const existingImg = document.getElementById('dynamic-image');
         if (existingImg) existingImg.remove();
     }
@@ -160,7 +180,6 @@ document.addEventListener('DOMContentLoaded', () => {
             modal.classList.add('show');
             
             if (type === 'video') {
-                // --- MODE VIDÉO ---
                 if (modalHeader) modalHeader.innerText = "Démonstration (Vidéo)";
                 if (mapControls) mapControls.style.display = 'none';
                 if (modalInstruction) modalInstruction.style.display = 'none';
@@ -181,7 +200,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 modalFrame.parentNode.insertBefore(video, modalFrame);
                 
             } else if (type === 'image') {
-                // --- MODE IMAGE (NOUVEAU) ---
                 if (modalHeader) modalHeader.innerText = "Aperçu de la Maquette";
                 if (mapControls) mapControls.style.display = 'none';
                 if (modalInstruction) modalInstruction.style.display = 'none';
@@ -191,17 +209,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 img.src = contentSrc;
                 img.style.width = "100%";
                 img.style.height = "100%";
-                img.style.objectFit = "contain"; // Garde les proportions
+                img.style.objectFit = "contain"; 
                 img.style.display = "block";
                 
-                // Gestion du chargement de l'image
                 img.onload = () => { if (modalLoader) modalLoader.style.display = 'none'; };
                 setTimeout(() => { if(modalLoader) modalLoader.style.display = 'none'; }, 3000);
 
                 modalFrame.parentNode.insertBefore(img, modalFrame);
 
             } else {
-                // --- MODE IFRAME ---
                 if (modalHeader) modalHeader.innerText = "Visualisation Interactive";
                 if (mapControls) mapControls.style.display = 'flex'; 
                 if (modalInstruction) modalInstruction.style.display = 'block';

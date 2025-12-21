@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <title>pydeck</title>
+        <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.13.0/mapbox-gl.js"></script>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" />
+    <script src='https://cdn.jsdelivr.net/npm/@deck.gl/jupyter-widget@~9.0.*/dist/index.js'></script>
+    <style>
+    body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+#deck-container {
+  width: 100vw;
+  height: 100vh;
+}
+
+#deck-container canvas {
+  z-index: 1;
+  background: none;
+}
+    </style>
+  </head>
+  <body>
+    <div id="deck-container">
+    </div>
+  </body>
+  <script>
+    const container = document.getElementById('deck-container');
+    const jsonInput = {
+  "initialViewState": {
+    "bearing": 30,
+    "latitude": 39.8283,
+    "longitude": -98.5795,
+    "maxPitch": 85,
+    "minPitch": 0,
+    "pitch": 60,
+    "zoom": 3.5
+  },
+  "layers": [
+    {
+      "@@type": "ColumnLayer",
+      "autoHighlight": true,
+      "data": [
+        {
+          "color": [
+            200,
+            95,
+            95
+          ],
+          "elevation": 3443.426,
+          "lat": 32.806671,
+          "lon": -86.79113,
+          "state": "AL",
+          "votes": 1721713
+        },
+        {
+          "color": [
+            217,
+            128,
+            128
+          ],
+          "elevation": 1778.596,
+          "lat": 34.969704,
+          "lon": -92.373123,
+          "state": "AR",
+          "votes": 889298
+        },
+        {
+          "color": [
+            191,
+            79,
+            79
+          ],
+          "elevation": 4819.812,
+          "lat": 33.729759,
+          "lon": -111.431221,
+          "state": "AZ",
+          "votes": 2409906
+        },
+        {
+          "color": [
+            150,
+            0,
+            0
+          ],
+          "elevation": 24369.043999999998,
+          "lat": 36.116203,
+          "lon": -119.681564,
+          "state": "CA",
+          "votes": 12184522
+        },
+        {
+          "color": [
+            190,
+            77,
+            77
+          ],
+          "elevation": 5027.812,
+          "lat": 39.059811,
+          "lon": -105.311104,
+          "state": "CO",
+          "votes": 2513906
+        },
+        {
+          "color": [
+            206,
+            106,
+            106
+          ],
+          "elevation": 2759.6140000000005,
+          "lat": 41.597782,
+          "lon": -72.755371,
+          "state": "CT",
+          "votes": 1379807
+        },
+        {
+          "color": [
+            241,
+            173,
+            173
+          ],
+          "elevation": 707.6279999999999,
+          "lat": 39.318523,
+          "lon": -75.507141,
+          "state": "DE",
+          "votes": 353814
+        },
+        {
+          "color": [
+            163,
+            25,
+            25
+          ],
+          "elevation": 14403.163999999999,
+          "lat": 27.766279,
+          "lon": -81.686783,
+          "state": "FL",
+          "votes": 7201582
+        },
+        {
+          "color": [
+            179,
+            57,
+            57
+          ],
+          "elevation": 7603.32,
+          "lat": 33.040619,
+          "lon": -83.643074,
+          "state": "GA",
+          "votes": 3801660
+        },
+        {
+          "color": [
+            239,
+            169,
+            169
+          ],
+          "elevation": 764.664,
+          "lat": 21.094318,
+          "lon": -157.498337,
+          "state": "HI",
+          "votes": 382332
+        },
+        {
+          "color": [
+            207,
+            108,
+            108
+          ],
+          "elevation": 2633.2960000000003,
+          "lat": 42.011539,
+          "lon": -93.210526,
+          "state": "IA",
+          "votes": 1316648
+        },
+        {
+          "color": [
+            227,
+            147,
+            147
+          ],
+          "elevation": 1191.448,
+          "lat": 44.240459,
+          "lon": -114.478828,
+          "state": "ID",
+          "votes": 595724
+        },
+        {
+          "color": [
+            174,
+            47,
+            47
+          ],
+          "elevation": 9275.896,
+          "lat": 40.349457,
+          "lon": -88.986137,
+          "state": "IL",
+          "votes": 4637948
+        },
+        {
+          "color": [
+            193,
+            82,
+            82
+          ],
+          "elevation": 4564.4580000000005,
+          "lat": 39.849426,
+          "lon": -86.258278,
+          "state": "IN",
+          "votes": 2282229
+        },
+        {
+          "color": [
+            213,
+            120,
+            120
+          ],
+          "elevation": 2101.956,
+          "lat": 38.5266,
+          "lon": -96.726486,
+          "state": "KS",
+          "votes": 1050978
+        },
+        {
+          "color": [
+            202,
+            100,
+            100
+          ],
+          "elevation": 3140.1479999999997,
+          "lat": 37.66814,
+          "lon": -84.670067,
+          "state": "KY",
+          "votes": 1570074
+        },
+        {
+          "color": [
+            204,
+            103,
+            103
+          ],
+          "elevation": 2921.186,
+          "lat": 31.169546,
+          "lon": -91.867805,
+          "state": "LA",
+          "votes": 1460593
+        },
+        {
+          "color": [
+            188,
+            72,
+            72
+          ],
+          "elevation": 5505.33,
+          "lat": 42.230171,
+          "lon": -71.530106,
+          "state": "MA",
+          "votes": 2752665
+        },
+        {
+          "color": [
+            193,
+            81,
+            81
+          ],
+          "elevation": 4572.568,
+          "lat": 39.063946,
+          "lon": -76.802101,
+          "state": "MD",
+          "votes": 2286284
+        },
+        {
+          "color": [
+            241,
+            173,
+            173
+          ],
+          "elevation": 699.9259999999999,
+          "lat": 44.693947,
+          "lon": -69.381927,
+          "state": "ME",
+          "votes": 349963
+        },
+        {
+          "color": [
+            176,
+            50,
+            50
+          ],
+          "elevation": 8699.392,
+          "lat": 43.326618,
+          "lon": -84.536095,
+          "state": "MI",
+          "votes": 4349696
+        },
+        {
+          "color": [
+            189,
+            76,
+            76
+          ],
+          "elevation": 5153.991999999999,
+          "lat": 45.694454,
+          "lon": -93.900192,
+          "state": "MN",
+          "votes": 2576996
+        },
+        {
+          "color": [
+            191,
+            79,
+            79
+          ],
+          "elevation": 4836.876,
+          "lat": 38.456085,
+          "lon": -92.288368,
+          "state": "MO",
+          "votes": 2418438
+        },
+        {
+          "color": [
+            215,
+            125,
+            125
+          ],
+          "elevation": 1877.806,
+          "lat": 32.741646,
+          "lon": -89.678696,
+          "state": "MS",
+          "votes": 938903
+        },
+        {
+          "color": [
+            231,
+            155,
+            155
+          ],
+          "elevation": 1008.8420000000001,
+          "lat": 46.921925,
+          "lon": -110.454353,
+          "state": "MT",
+          "votes": 504421
+        },
+        {
+          "color": [
+            180,
+            58,
+            58
+          ],
+          "elevation": 7326.0019999999995,
+          "lat": 35.630066,
+          "lon": -79.806419,
+          "state": "NC",
+          "votes": 3663001
+        },
+        {
+          "color": [
+            243,
+            178,
+            178
+          ],
+          "elevation": 643.064,
+          "lat": 47.528912,
+          "lon": -99.784012,
+          "state": "ND",
+          "votes": 321532
+        },
+        {
+          "color": [
+            223,
+            140,
+            140
+          ],
+          "elevation": 1393.1399999999999,
+          "lat": 41.12537,
+          "lon": -98.268082,
+          "state": "NE",
+          "votes": 696570
+        },
+        {
+          "color": [
+            228,
+            149,
+            149
+          ],
+          "elevation": 1141.4879999999998,
+          "lat": 43.452492,
+          "lon": -71.563896,
+          "state": "NH",
+          "votes": 570744
+        },
+        {
+          "color": [
+            185,
+            67,
+            67
+          ],
+          "elevation": 6109.66,
+          "lat": 40.298904,
+          "lon": -74.521011,
+          "state": "NJ",
+          "votes": 3054830
+        },
+        {
+          "color": [
+            223,
+            140,
+            140
+          ],
+          "elevation": 1386.622,
+          "lat": 34.840515,
+          "lon": -106.248482,
+          "state": "NM",
+          "votes": 693311
+        },
+        {
+          "color": [
+            215,
+            124,
+            124
+          ],
+          "elevation": 1921.548,
+          "lat": 38.313515,
+          "lon": -117.055374,
+          "state": "NV",
+          "votes": 960774
+        },
+        {
+          "color": [
+            168,
+            34,
+            34
+          ],
+          "elevation": 12056.496,
+          "lat": 42.165726,
+          "lon": -74.948051,
+          "state": "NY",
+          "votes": 6028248
+        },
+        {
+          "color": [
+            176,
+            49,
+            49
+          ],
+          "elevation": 8824.815999999999,
+          "lat": 40.388783,
+          "lon": -82.764915,
+          "state": "OH",
+          "votes": 4412408
+        },
+        {
+          "color": [
+            210,
+            114,
+            114
+          ],
+          "elevation": 2357.672,
+          "lat": 35.565342,
+          "lon": -96.928917,
+          "state": "OK",
+          "votes": 1178836
+        },
+        {
+          "color": [
+            198,
+            91,
+            91
+          ],
+          "elevation": 3726.6699999999996,
+          "lat": 44.572021,
+          "lon": -122.070938,
+          "state": "OR",
+          "votes": 1863335
+        },
+        {
+          "color": [
+            173,
+            44,
+            44
+          ],
+          "elevation": 9863.511999999999,
+          "lat": 40.590752,
+          "lon": -77.209755,
+          "state": "PA",
+          "votes": 4931756
+        },
+        {
+          "color": [
+            239,
+            170,
+            170
+          ],
+          "elevation": 746.2779999999999,
+          "lat": 41.680893,
+          "lon": -71.51178,
+          "state": "RI",
+          "votes": 373139
+        },
+        {
+          "color": [
+            200,
+            96,
+            96
+          ],
+          "elevation": 3418.5840000000003,
+          "lat": 33.856892,
+          "lon": -80.945007,
+          "state": "SC",
+          "votes": 1709292
+        },
+        {
+          "color": [
+            242,
+            175,
+            175
+          ],
+          "elevation": 670.942,
+          "lat": 44.299782,
+          "lon": -99.438828,
+          "state": "SD",
+          "votes": 335471
+        },
+        {
+          "color": [
+            194,
+            84,
+            84
+          ],
+          "elevation": 4319.65,
+          "lat": 35.747845,
+          "lon": -86.692345,
+          "state": "TN",
+          "votes": 2159825
+        },
+        {
+          "color": [
+            160,
+            19,
+            19
+          ],
+          "elevation": 16403.166,
+          "lat": 31.054487,
+          "lon": -97.563461,
+          "state": "TX",
+          "votes": 8201583
+        },
+        {
+          "color": [
+            212,
+            119,
+            119
+          ],
+          "elevation": 2109.5060000000003,
+          "lat": 40.150032,
+          "lon": -111.862434,
+          "state": "UT",
+          "votes": 1054753
+        },
+        {
+          "color": [
+            183,
+            63,
+            63
+          ],
+          "elevation": 6626.454,
+          "lat": 37.769337,
+          "lon": -78.169968,
+          "state": "VA",
+          "votes": 3313227
+        },
+        {
+          "color": [
+            247,
+            186,
+            186
+          ],
+          "elevation": 545.374,
+          "lat": 44.045876,
+          "lon": -72.710686,
+          "state": "VT",
+          "votes": 272687
+        },
+        {
+          "color": [
+            185,
+            67,
+            67
+          ],
+          "elevation": 6134.588,
+          "lat": 47.400902,
+          "lon": -121.490494,
+          "state": "WA",
+          "votes": 3067294
+        },
+        {
+          "color": [
+            190,
+            76,
+            76
+          ],
+          "elevation": 5124.1939999999995,
+          "lat": 44.268543,
+          "lon": -89.616508,
+          "state": "WI",
+          "votes": 2562097
+        },
+        {
+          "color": [
+            228,
+            149,
+            149
+          ],
+          "elevation": 1155.982,
+          "lat": 38.491226,
+          "lon": -80.954453,
+          "state": "WV",
+          "votes": 577991
+        },
+        {
+          "color": [
+            255,
+            200,
+            200
+          ],
+          "elevation": 410.55,
+          "lat": 42.755966,
+          "lon": -107.30249,
+          "state": "WY",
+          "votes": 205275
+        }
+      ],
+      "elevationScale": 100,
+      "getElevation": "@@=elevation",
+      "getFillColor": "@@=color",
+      "getPosition": "@@=[lon, lat]",
+      "id": "2efcd890-a141-43de-8c15-5b02b5e67506",
+      "pickable": true,
+      "radius": 70000
+    }
+  ],
+  "mapProvider": "carto",
+  "mapStyle": "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+  "views": [
+    {
+      "@@type": "MapView",
+      "controller": true
+    }
+  ]
+};
+    const tooltip = {'text': '{state}\nVotes: {votes}'};
+    const customLibraries = null;
+    const configuration = null;
+
+    const deckInstance = createDeck({
+                  container,
+      jsonInput,
+      tooltip,
+      customLibraries,
+      configuration
+    });
+
+  </script>
+</html>

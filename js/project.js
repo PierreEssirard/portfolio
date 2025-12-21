@@ -44,12 +44,27 @@ const myProjects = [
             "Logique de contrôle-commande : Asservissement proportionnel et machines à états."
         ],
         tech: ["C / C++", "STM32", "CubeIDE", "I2C / UART / PWM", "Hardware"],
-        
-        // Configuration Image
-        interactiveMap: "assets/femre.jpg",
-        type: "image", // Nouveau type pour gérer la photo
+        interactiveMap: "assets/ferme.jpg",
+        type: "image",
         buttonText: "Voir la maquette",
         imageText: "📷 Photo du montage disponible",
+        githubLink: ""
+    },
+    {
+        title: "Robot Mobile Autonome - Navigation & Labyrinthe",
+        description: "Dans le cadre de ce projet de robotique mobile, nous avons conçu et programmé un robot capable de naviguer de manière autonome dans un labyrinthe et d'en sortir en moins de 3 minutes. Basé sur une architecture Arduino (ATmega328P), le système repose sur une fusion de capteurs (Infrarouges latéraux et Ultrasons frontal) pour cartographier son environnement immédiat et prendre des décisions de trajectoire en temps réel.<br><br><strong>Défis techniques relevés :</strong><br>• <strong>Asservissement Moteur :</strong> Génération de signaux PWM précis (50Hz) via Timer Hardware pour piloter les servomoteurs à rotation continue.<br>• <strong>Détection Réactive :</strong> Utilisation d'interruptions externes pour les capteurs IR (réaction immédiate aux murs) et mesure de temps de vol par Timer pour l'ultrason.<br>• <strong>Algorithme de Sortie :</strong> Implémentation d'une machine à états finis robuste gérant les cas complexes (impasse, couloir, intersection).<br><br><strong>🏆 Récompense :</strong><br>Ce projet a reçu le <strong>Certificat de Mérite</strong> pour avoir développé le robot avec le <strong>meilleur algorithme d'évitement d'obstacles</strong> de la promotion.<br><br><img src=\"assets/certificat.jpg\" alt=\"Certificat de Mérite\" style=\"width:100%; max-width:500px; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,0.1); border:1px solid #eee; margin-top:10px;\">",
+        highlights: [
+            "Programmation 'Bare Metal' sur microcontrôleur AVR (Registres, Timers, Interruptions).",
+            "Algorithme de navigation autonome (Mur gauche/droit, détection d'impasses).",
+            "Traitement du signal : Filtrage des données capteurs et gestion des rebonds.",
+            "Optimisation du temps de réponse : Architecture pilotée par interruptions (vs Polling).",
+            "Conception modulaire : Création de librairies dédiées (moteur.h, ir.h, ultrasons.h)."
+        ],
+        tech: ["C / C++", "Arduino", "Robotics", "PWM / Timers", "Algorithms"],
+        interactiveMap: "assets/voiture.mp4",
+        type: "video",
+        buttonText: "Voir le robot en action",
+        imageText: "🎥 Démo vidéo & Certificat",
         githubLink: ""
     }
 ];

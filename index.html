@@ -69,28 +69,41 @@
         </div>
     </section>
 
-    <!-- SECTION PORTFOLIO MODIFIÉE POUR LE CARROUSEL -->
+    <!-- SECTION PORTFOLIO -->
     <section id="portfolio">
         <h2 class="section-title">Mes Projets</h2>
         
-        <!-- NOUVEL INDICATEUR DE NOMBRE DE PROJETS -->
         <div id="project-counter-badge" class="project-counter-badge">
             <!-- Le texte sera injecté par JS -->
         </div>
 
-        <p class="section-instruction">👇 Survolez pour mettre en pause • Cliquez pour les détails</p>
-
-        <!-- Conteneur Vue (Masque) -->
-        <div class="carousel-view">
-            <!-- Piste animée (Contient les cartes) -->
-            <div class="carousel-track" id="projects-container">
-                <!-- Les projets sont injectés ici par JS (en double pour la boucle) -->
+        <!-- INSTRUCTION -->
+        <div class="instruction-wrapper">
+            <div class="instruction-badge">
+                <span class="instruction-icon">👉</span>
+                <span class="instruction-text">Survolez pour Zoomer • Cliquez pour Explorer</span>
             </div>
         </div>
 
-        <!-- Conteneur pour l'affichage détaillé -->
-        <div id="project-details" class="details-container" style="display: none;">
-            <!-- Le contenu sera injecté ici par JS -->
+        <!-- Conteneur Scène 3D -->
+        <div class="carousel-scene">
+            <div class="carousel-track" id="projects-container">
+                <!-- Les cartes seront injectées ici par JS -->
+            </div>
+        </div>
+
+        <!-- Contrôles de navigation -->
+        <div class="carousel-controls">
+            <button id="prev-btn" class="nav-btn" aria-label="Projet précédent">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+            </button>
+            <button id="next-btn" class="nav-btn" aria-label="Projet suivant">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+            </button>
         </div>
     </section>
 
@@ -102,7 +115,7 @@
             <div class="timeline-item">
                 <div class="timeline-marker"></div>
                 <div class="timeline-content">
-                    <div class="timeline-date">Sept. 2021 - Présent</div>
+                    <div class="timeline-date">Sept. 2024 - Présent</div>
                     <h3 class="timeline-title">Apprenti Ingénieur - Systèmes Embarqués</h3>
                     <div class="timeline-company">Safran Electronics & Defense</div>
                     <p class="timeline-desc">
@@ -125,7 +138,7 @@
             <div class="timeline-item">
                 <div class="timeline-marker"></div>
                 <div class="timeline-content">
-                    <div class="timeline-date">Avril 2021 - Juin 2021</div>
+                    <div class="timeline-date">Avril 2024 - Juin 2024</div>
                     <h3 class="timeline-title">Stage Technicien - DUT GEII</h3>
                     <div class="timeline-company">Safran Electronics & Defense</div>
                     <p class="timeline-desc">
@@ -148,7 +161,7 @@
     </section>
 
     <footer id="contact">
-        <h2>Collaborons ensemble</h2>
+        <h2>Mes contacts</h2>
         <div class="contact-grid">
             <div class="contact-item">
                 <label>Email (Cliquez pour envoyer)</label>
@@ -166,31 +179,44 @@
         <p class="copyright">© 2024 – Pierre Essirard</p>
     </footer>
 
+    <!-- MODALE UNIFIÉE AVEC NOUVEAUX CONTRÔLES -->
     <div id="map-modal" class="modal">
         <div class="modal-content">
-            <div class="close-modal"></div>
+            
+            <!-- NOUVEAU GROUPE DE CONTRÔLES (RETOUR ET CROIX) -->
+            <div class="modal-controls-group">
+                <button id="btn-back-floating" class="control-btn back-btn" style="display: none;">← Retour</button>
+                <div class="close-modal control-btn">✕</div>
+            </div>
             
             <div id="modal-loader" class="modal-loader">
                 <div class="spinner-small"></div>
-                <span>Chargement des données...</span>
+                <span>Chargement...</span>
             </div>
 
-            <div class="modal-header">
-                <div>
-                    <h2>Visualisation Interactive</h2>
-                    <p class="modal-instruction">Cliquez sur les boutons ci-dessous pour changer de graphique :</p>
-                </div>
-                
-                <div class="map-controls">
-                    <button onclick="changeMap('maps/carte_US_par_etat.html')">États</button>
-                    <button onclick="changeMap('maps/carte_US_par_région.html')">Comtés</button>
-                    <button onclick="changeMap('maps/graphe_sunburst.html')">Sunburst</button>
-                    <button onclick="changeMap('maps/graphe_grandes_villes.html')">Grandes Villes</button>
-                    <button onclick="changeMap('maps/graphe_petites_villes.html')">Petites Villes</button>
-                    <button onclick="changeMap('maps/graphe_lieu_de_vote.html')">Lieux de Vote</button>
-                </div>
+            <!-- VUE 1 : DÉTAILS TEXTE -->
+            <div id="modal-details-view" class="modal-view" style="display: none;">
+                <!-- Le contenu sera injecté par JS -->
             </div>
-            <iframe id="map-frame" src="" frameborder="0"></iframe>
+
+            <!-- VUE 2 : MÉDIA / INTERACTIF -->
+            <div id="modal-media-view" class="modal-view" style="display: none;">
+                <div class="modal-header">
+                    <h2 id="modal-media-title">Visualisation Interactive</h2>
+                    
+                    <p class="modal-instruction">Cliquez sur les boutons ci-dessous pour changer de graphique :</p>
+                    
+                    <div class="map-controls">
+                        <button onclick="changeMap('maps/carte_US_par_etat.html')">États</button>
+                        <button onclick="changeMap('maps/carte_US_par_région.html')">Comtés</button>
+                        <button onclick="changeMap('maps/graphe_sunburst.html')">Sunburst</button>
+                        <button onclick="changeMap('maps/graphe_grandes_villes.html')">Grandes Villes</button>
+                        <button onclick="changeMap('maps/graphe_petites_villes.html')">Petites Villes</button>
+                        <button onclick="changeMap('maps/graphe_lieu_de_vote.html')">Lieux de Vote</button>
+                    </div>
+                </div>
+                <iframe id="map-frame" src="" frameborder="0"></iframe>
+            </div>
         </div>
     </div>
 

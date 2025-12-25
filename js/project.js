@@ -13,7 +13,7 @@ const myProjects = [
         interactiveMap: "maps/carte_US_par_etat.html",
         type: "iframe",
         buttonText: "Voir la visualisation 3D",
-        imageText: "📊 Cartes interactives 3D disponibles",
+        imageText: "Cartes interactives 3D disponibles",
         githubLink: "#"
     },
     {
@@ -30,7 +30,7 @@ const myProjects = [
         interactiveMap: "assets/demo_game.mp4", 
         type: "video",
         buttonText: "Voir la démo vidéo",
-        imageText: "▶️ Voir le gameplay (3 jeux)",
+        imageText: "Voir le gameplay (3 jeux)",
         githubLink: "" 
     },
     {
@@ -44,10 +44,10 @@ const myProjects = [
             "Logique de contrôle-commande : Asservissement proportionnel et machines à états."
         ],
         tech: ["C / C++", "STM32", "CubeIDE", "I2C / UART / PWM", "Hardware"],
-        interactiveMap: "assets/ferme.jpg",
+        interactiveMap: "assets/thumbnails/ferme.jpg",
         type: "image",
         buttonText: "Voir la maquette",
-        imageText: "📷 Photo du montage disponible",
+        imageText: "Photo du montage disponible",
         githubLink: ""
     },
     {
@@ -64,7 +64,7 @@ const myProjects = [
         interactiveMap: "assets/voiture.mp4",
         type: "video",
         buttonText: "Voir le robot en action",
-        imageText: "🎥 Démo vidéo & Certificat",
+        imageText: "Démo vidéo & Certificat",
         githubLink: ""
     }
 ];

@@ -30,8 +30,21 @@ scene.add(dirLight);
 
 // --- 5. Chargement du Modèle & Logique de Barre de Progression ---
 let rafale;
-const baseScale = 0.6; 
-const startPositionX = 4; 
+
+// Fonction de mise à jour responsive de l'avion
+function updateRafaleResponsive() {
+    if (!rafale) return;
+
+    if (window.innerWidth < 768) {
+        // --- MOBILE ---
+        // Avion tout petit et en haut
+        rafale.scale.set(0.25, 0.25, 0.25);
+    } else {
+        // --- DESKTOP ---
+        // Taille normale
+        rafale.scale.set(0.6, 0.6, 0.6);
+    }
+}
 
 // Éléments du DOM pour le loader
 const globalLoader = document.getElementById('global-loader');
@@ -43,26 +56,21 @@ const loadingText = document.getElementById('loading-text');
 let isModelLoaded = false;
 let isTimeElapsed = false;
 
-// --- LOGIQUE MINUTERIE 5 SECONDES (MODIFIÉ) ---
-const duration = 2000; // 2000 ms = 2 secondes
-const intervalTime = 50; // Mise à jour toutes les 50ms pour fluidité
-const step = 100 / (duration / intervalTime); // Pourcentage à ajouter par tick
+// --- LOGIQUE MINUTERIE 5 SECONDES ---
+const duration = 2000; 
+const intervalTime = 50; 
+const step = 100 / (duration / intervalTime); 
 let currentProgress = 0;
 
 const timer = setInterval(() => {
     currentProgress += step;
-    
-    // Plafond à 100%
     if (currentProgress >= 100) {
         currentProgress = 100;
         isTimeElapsed = true;
-        clearInterval(timer); // Arrêt de la minuterie
-        checkLoadComplete();  // On vérifie si on peut fermer
+        clearInterval(timer); 
+        checkLoadComplete();  
     }
-
-    // Mise à jour visuelle
     updateLoaderUI(currentProgress);
-
 }, intervalTime);
 
 function updateLoaderUI(percent) {
@@ -71,14 +79,12 @@ function updateLoaderUI(percent) {
     if (loadingText) loadingText.innerText = `Initialisation des systèmes... ${Math.round(percent)}%`;
 }
 
-// Fonction finale de fermeture
 function checkLoadComplete() {
-    // Il faut que les DEUX conditions soient vraies
     if (isModelLoaded && isTimeElapsed) {
         if (globalLoader) {
             setTimeout(() => {
                 globalLoader.classList.add('fade-out');
-            }, 500); // Petit délai bonus pour la douceur
+            }, 500); 
         }
     }
 }
@@ -91,23 +97,21 @@ loader.load(
     (gltf) => {
         rafale = gltf.scene;
         
-        rafale.scale.set(baseScale, baseScale, baseScale);
-        rafale.position.set(startPositionX, 0, 0); 
-        
+        // Appliquer la configuration initiale
+        updateRafaleResponsive();
+        rafale.position.set(4, 0, 0); 
         rafale.rotation.y = 1; 
         rafale.rotation.x = 1; 
         rafale.rotation.z = 0;
 
         scene.add(rafale);
 
-        // Le modèle est prêt !
         isModelLoaded = true;
         checkLoadComplete(); 
     },
     undefined,
     (error) => {
         console.error('Erreur chargement modèle:', error);
-        // En cas d'erreur, on force la fin pour ne pas bloquer l'utilisateur éternellement
         isModelLoaded = true;
         checkLoadComplete();
     }
@@ -128,15 +132,26 @@ function animate() {
     const time = clock.getElapsedTime();
 
     if (rafale) {
-        // --- A. Effet APESANTEUR ---
-        rafale.position.y = Math.sin(time * 1.2) * 0.08; 
-        
-        // --- B. Traversée DROITE -> GAUCHE ---
-        rafale.position.x = startPositionX - (scrollY * 0.015);
-        
-        // --- C. Rotation sur lui-même ---
-        rafale.rotation.y = 0; 
-        
+        const floatingY = Math.sin(time * 1.2) * 0.08;
+
+        if (window.innerWidth < 768) {
+            // --- MOBILE : FIXE AU DESSUS DU NOM ---
+            // On le place assez haut (y = 1.6) et centré (x = 0)
+            rafale.position.y = 1.6 + floatingY;
+            rafale.position.x = 0; 
+            
+            // Rotation spécifique pour bien le voir de face/dessous
+            rafale.rotation.y = 0; 
+            rafale.rotation.x = 0.4; // Légèrement cabré
+            rafale.rotation.z = Math.sin(time * 0.5) * 0.1; // Léger roulis
+        } else {
+            // --- DESKTOP : TRAVERSÉE NORMALE ---
+            rafale.position.y = floatingY - 0.2; 
+            rafale.position.x = 4 - (scrollY * 0.015);
+            rafale.rotation.y = 0; 
+            rafale.rotation.x = 0;
+            rafale.rotation.z = 0;
+        }
     }
 
     renderer.render(scene, camera);
@@ -149,4 +164,5 @@ window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    updateRafaleResponsive();
 });

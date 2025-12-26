@@ -1,0 +1,155 @@
+/* responsive.css - Styles spécifiques Mobile & Tablette */
+
+/* ========================================================================
+   RESPONSIVE (MOBILE & TABLETTE) - MAX-WIDTH 768px
+   ======================================================================== */
+
+@media (max-width: 768px) {
+    /* 1. Navigation : Plus compacte */
+    nav .container {
+        padding: 15px 20px;
+    }
+    nav ul {
+        gap: 15px;
+    }
+    nav a {
+        font-size: 12px;
+    }
+    .logo {
+        font-size: 18px;
+    }
+
+    /* 2. Hero : Centré et textes plus petits */
+    #hero {
+        padding: 0 20px;
+        text-align: center;
+        display: block; 
+    }
+    .hero-content {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center; /* On garde center mais on décale via padding */
+        align-items: center;
+        /* Augmentation significative pour pousser le texte sous l'avion */
+        padding-top: 25vh; 
+        padding-bottom: 50px;
+    }
+    .tag {
+        margin-bottom: 12px; 
+        font-size: 10px;
+    }
+    h1 {
+        font-size: 36px; /* Un peu plus petit pour mobile */
+        margin-bottom: 12px;
+        line-height: 1.1;
+    }
+    .hero-content > p {
+        font-size: 14px;
+        margin-bottom: 24px;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.85); 
+        max-width: 100%;
+    }
+    .cta-buttons {
+        justify-content: center;
+        flex-wrap: wrap; 
+        gap: 10px;
+    }
+    .btn {
+        padding: 12px 24px;
+        font-size: 13px;
+    }
+
+    /* 3. Portfolio : Ajustement de l'espace */
+    #portfolio {
+        padding-top: 100px;
+        padding-bottom: 60px;
+    }
+    .instruction-wrapper {
+        margin-bottom: 30px;
+    }
+    .instruction-badge {
+        padding: 8px 16px;
+    }
+    .instruction-text {
+        font-size: 10px;
+    }
+
+    /* 4. Carrousel 3D : REDUCTION TAILLE CARTES POUR MOBILE */
+    .carousel-scene {
+        height: 350px; 
+        perspective: 800px; 
+    }
+    .project-card-container {
+        width: 180px; /* ENCORE PLUS PETIT */
+        height: 280px;
+        margin-left: -90px;
+        margin-top: -140px;
+    }
+    
+    /* Ajustement interne de la carte */
+    .project-card-inner {
+        padding: 15px; 
+    }
+    .project-card-inner h3 {
+        font-size: 16px; 
+        margin-bottom: 8px;
+    }
+    .tech-stack-mini span {
+        font-size: 7px;
+        padding: 3px 5px;
+    }
+    .project-number {
+        font-size: 8px;
+        margin-bottom: 8px;
+        padding: 4px 8px;
+    }
+    .details-link-hint {
+        font-size: 8px;
+        padding: 6px 10px;
+    }
+
+    /* 5. Modale : Optimisation de l'espace */
+    .modal-content {
+        width: 95%; 
+        height: 90vh; 
+    }
+    .modal-details-body {
+        grid-template-columns: 1fr; 
+        gap: 20px;
+    }
+    #modal-details-view {
+        padding: 20px; 
+    }
+    .modal-details-title {
+        font-size: 24px;
+    }
+    .modal-controls-group {
+        top: 10px;
+        right: 10px;
+    }
+    
+    /* 6. Timeline : Marges réduites */
+    .timeline-container {
+        padding: 0;
+    }
+    .timeline-content {
+        margin-left: 40px;
+        padding: 20px;
+    }
+    .timeline-marker {
+        width: 16px;
+        height: 16px;
+        left: 13px; 
+    }
+    
+    /* 7. Footer */
+    #contact {
+        padding: 60px 20px;
+    }
+    .contact-grid {
+        grid-template-columns: 1fr; 
+        gap: 30px;
+    }
+}

@@ -4,9 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pierre Essirard - Ingénieur</title>
-    <link rel="stylesheet" href="style.css">
+    
+    <!-- Polices -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono&display=swap" rel="stylesheet">
     
+    <!-- STYLES SÉPARÉS (L'ordre est important) -->
+    <link rel="stylesheet" href="css/base.css">       <!-- Variables & Reset -->
+    <link rel="stylesheet" href="css/layout.css">     <!-- Structure, Nav, Hero, Footer -->
+    <link rel="stylesheet" href="css/components.css"> <!-- Boutons, Cartes, Modales, Loader -->
+    <link rel="stylesheet" href="css/responsive.css"> <!-- Règles Mobile -->
+
     <script type="importmap">
         {
             "imports": {
@@ -34,7 +41,6 @@
                 </div>
             </div>
             
-            <!-- MODIFICATION ICI : TEXTE CHANGÉ -->
             <p id="loading-text">Chargement... 0%</p>
         </div>
     </div>
@@ -183,7 +189,7 @@
     <div id="map-modal" class="modal">
         <div class="modal-content">
             
-            <!-- NOUVEAU GROUPE DE CONTRÔLES (RETOUR ET CROIX) -->
+            <!-- GROUPE DE CONTRÔLES (RETOUR ET CROIX) -->
             <div class="modal-controls-group">
                 <button id="btn-back-floating" class="control-btn back-btn" style="display: none;">← Retour</button>
                 <div class="close-modal control-btn">✕</div>

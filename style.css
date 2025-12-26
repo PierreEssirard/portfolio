@@ -1185,23 +1185,36 @@ h1 {
         height: 100vh;
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        justify-content: center; /* On garde center mais on décale via padding */
         align-items: center;
-        /* Ajout d'un padding-top pour laisser la place à l'avion */
-        padding-top: 60px; 
+        /* Augmentation significative pour pousser le texte sous l'avion */
+        padding-top: 25vh; 
+        padding-bottom: 50px;
+    }
+    .tag {
+        margin-bottom: 12px; /* Réduit (était 32px desktop) */
+        font-size: 10px;
     }
     h1 {
-        font-size: 42px; 
-        margin-bottom: 20px;
+        font-size: 36px; /* Un peu plus petit pour mobile */
+        margin-bottom: 12px; /* Réduit (était 24px) */
+        line-height: 1.1;
     }
     .hero-content > p {
-        font-size: 16px;
+        font-size: 14px;
+        margin-bottom: 24px; /* Réduit */
         padding: 10px;
         background: rgba(255, 255, 255, 0.85); 
+        max-width: 100%;
     }
     .cta-buttons {
         justify-content: center;
         flex-wrap: wrap; 
+        gap: 10px; /* Réduit gap */
+    }
+    .btn {
+        padding: 12px 24px; /* Boutons un peu plus petits */
+        font-size: 13px;
     }
 
     /* 3. Portfolio : Ajustement de l'espace */
@@ -1221,30 +1234,36 @@ h1 {
 
     /* 4. Carrousel 3D : REDUCTION TAILLE CARTES POUR MOBILE */
     .carousel-scene {
-        height: 400px; 
-        perspective: 1000px; 
+        height: 350px; /* Réduit un peu la hauteur */
+        perspective: 800px; 
     }
     .project-card-container {
-        width: 220px; /* Plus petit (était 260px ou 300px) */
-        height: 320px; /* Plus petit (était 380px ou 420px) */
-        margin-left: -110px; /* Moitié de width */
-        margin-top: -160px;  /* Moitié de height */
+        width: 180px; /* ENCORE PLUS PETIT (était 220px) */
+        height: 280px; /* ENCORE PLUS PETIT (était 320px) */
+        margin-left: -90px; /* Moitié de width */
+        margin-top: -140px;  /* Moitié de height */
     }
     
     /* Ajustement interne de la carte */
     .project-card-inner {
-        padding: 20px;
+        padding: 15px; /* Padding réduit */
     }
     .project-card-inner h3 {
-        font-size: 18px; /* Titre plus petit */
+        font-size: 16px; /* Titre plus petit */
+        margin-bottom: 8px;
     }
     .tech-stack-mini span {
-        font-size: 8px; /* Tags plus petits */
-        padding: 4px 6px;
+        font-size: 7px; /* Tags minuscules */
+        padding: 3px 5px;
     }
     .project-number {
-        font-size: 9px;
-        margin-bottom: 10px;
+        font-size: 8px;
+        margin-bottom: 8px;
+        padding: 4px 8px;
+    }
+    .details-link-hint {
+        font-size: 8px;
+        padding: 6px 10px;
     }
 
     /* 5. Modale : Optimisation de l'espace */

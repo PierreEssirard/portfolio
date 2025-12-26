@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalMediaView = document.getElementById('modal-media-view');
     const modalDetailsView = document.getElementById('modal-details-view');
     
-    // Nouveau bouton retour
+    // Nouveau bouton retour (dans le groupe de contrôles)
     const btnBackFloating = document.getElementById('btn-back-floating');
 
     // Le badge d'instruction principal
@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- COULEURS DES PROJETS ---
+    // Bleu, Rouge, Marron, Vert
     const projectColors = ['#334155', '#9F1239', '#92400E', '#065F46'];
 
     // ---------------------------------------------------------
@@ -71,9 +72,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const count = (typeof myProjects !== 'undefined' && Array.isArray(myProjects)) ? myProjects.length : 4;
         
         if (window.innerWidth < 768) {
-            // --- MOBILE : CARTES PLUS PETITES ET SERRÉES ---
-            const minRadiusX = 140; // Réduit (était 180)
-            const spacingPerCard = 200; // Réduit (était 260)
+            // --- MOBILE : CARTES ENCORE PLUS PETITES ---
+            const minRadiusX = 130; 
+            const spacingPerCard = 160; 
             const calculatedRadius = (count * spacingPerCard) / (2 * Math.PI);
             radiusX = Math.max(minRadiusX, calculatedRadius);
             
@@ -129,7 +130,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
 
-            // ... (reste des event listeners inchangés) ...
             cardContainer.addEventListener('mouseenter', () => {
                 hoveredCard = cardContainer;
                 if (instructionTextElement) {
@@ -223,24 +223,40 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (e.key === 'ArrowRight') { speedDirection = 1; currentSpeed = BOOST_FORCE; }
     });
 
-    // ... (reste du fichier avec les fonctions modal inchangées) ...
+    // ---------------------------------------------------------
+    // FONCTIONS MODALE (REVISITÉES)
+    // ---------------------------------------------------------
+
     function clearModalContent() {
+        // Reset Media View
         if (modalFrame) { modalFrame.src = ""; modalFrame.style.display = 'none'; }
         const existingVideo = document.getElementById('dynamic-video');
         if (existingVideo) { existingVideo.pause(); existingVideo.remove(); }
         const existingImg = document.getElementById('dynamic-image');
         if (existingImg) existingImg.remove();
+        
+        // Reset Details View
         if(modalDetailsView) modalDetailsView.innerHTML = '';
+        
+        // Reset Visibilité
         if(modalMediaView) modalMediaView.style.display = 'none';
         if(modalDetailsView) modalDetailsView.style.display = 'none';
+        
+        // Cacher bouton retour
         if(btnBackFloating) btnBackFloating.style.display = 'none';
     }
 
+    // --- FONCTION : RETOUR ARRIÈRE ---
     function backToDetails() {
+        // Pause vidéo si elle existe
         const existingVideo = document.getElementById('dynamic-video');
         if (existingVideo) existingVideo.pause();
+        
+        // Bascule de vue
         modalMediaView.style.display = 'none';
         modalDetailsView.style.display = 'block';
+        
+        // Cacher le bouton retour car on est revenu au début
         btnBackFloating.style.display = 'none';
     }
 
@@ -248,16 +264,26 @@ document.addEventListener('DOMContentLoaded', () => {
         btnBackFloating.addEventListener('click', backToDetails);
     }
 
+    // --- FONCTION 1 : Ouvrir la vue DÉTAILS ---
     function openDetailsModal(project, index) {
         clearModalContent();
+        
+        // MODIFICATION : On s'assure que le loader est masqué par défaut pour les détails texte
+        if (modalLoader) modalLoader.style.display = 'none';
+
         modal.style.display = 'flex';
         setTimeout(() => modal.classList.add('show'), 10);
+
+        // Récupération de la couleur du projet
         const accentColor = projectColors[index % projectColors.length];
         
+        // Construction du contenu HTML
         let interactiveSection = '';
         if (project.interactiveMap) {
             const btnLabel = project.buttonText || "Voir la visualisation";
             const contentType = project.type || 'iframe'; 
+            
+            // Bouton coloré
             interactiveSection = `
                 <div style="margin-top: 30px;">
                     <button class="btn-interactive" 
@@ -307,25 +333,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
         `;
+
         modalDetailsView.style.display = 'block';
     }
 
+    // --- FONCTION 2 : Ouvrir la vue MÉDIA (Interactive/Vidéo) ---
     function openMediaModal(contentSrc, type) {
         modalDetailsView.style.display = 'none';
         modalMediaView.style.display = 'flex';
+        
         if(btnBackFloating) btnBackFloating.style.display = 'flex';
+
         if (modalFrame) { modalFrame.src = ""; modalFrame.style.display = 'none'; }
         const existingVideo = document.getElementById('dynamic-video');
         if (existingVideo) { existingVideo.remove(); }
         const existingImg = document.getElementById('dynamic-image');
         if (existingImg) existingImg.remove();
+
+        // On affiche le loader ici seulement
         if (modalLoader) modalLoader.style.display = 'flex';
+
         const targetTitle = document.getElementById('modal-media-title');
 
         if (type === 'video') {
             if (targetTitle) targetTitle.innerText = "Démonstration (Vidéo)";
             if (mapControls) mapControls.style.display = 'none';
             if (modalInstruction) modalInstruction.style.display = 'none';
+            
             const video = document.createElement('video');
             video.id = 'dynamic-video';
             video.src = contentSrc;
@@ -336,13 +370,17 @@ document.addEventListener('DOMContentLoaded', () => {
             video.style.objectFit = "contain"; 
             video.style.outline = "none";
             video.style.background = "#000"; 
+            
             video.onloadeddata = () => { if (modalLoader) modalLoader.style.display = 'none'; };
             setTimeout(() => { if(modalLoader) modalLoader.style.display = 'none'; }, 2000);
+            
             modalFrame.parentNode.insertBefore(video, modalFrame);
+
         } else if (type === 'image') {
             if (targetTitle) targetTitle.innerText = "Aperçu de la Maquette";
             if (mapControls) mapControls.style.display = 'none';
             if (modalInstruction) modalInstruction.style.display = 'none';
+            
             const img = document.createElement('img');
             img.id = 'dynamic-image';
             img.src = contentSrc;
@@ -350,15 +388,20 @@ document.addEventListener('DOMContentLoaded', () => {
             img.style.height = "100%";
             img.style.objectFit = "contain"; 
             img.style.display = "block";
+            
             img.onload = () => { if (modalLoader) modalLoader.style.display = 'none'; };
             setTimeout(() => { if(modalLoader) modalLoader.style.display = 'none'; }, 2000);
+            
             modalFrame.parentNode.insertBefore(img, modalFrame);
+
         } else {
             if (targetTitle) targetTitle.innerText = "Visualisation Interactive";
             if (mapControls) mapControls.style.display = 'flex'; 
             if (modalInstruction) modalInstruction.style.display = 'block';
+            
             modalFrame.style.opacity = "0"; 
             modalFrame.style.display = 'block';
+            
             modalFrame.onload = () => {
                 modalFrame.style.transition = "opacity 0.5s ease";
                 modalFrame.style.opacity = "1";
@@ -393,6 +436,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (existingVideo) existingVideo.remove();
         const existingImg = document.getElementById('dynamic-image');
         if (existingImg) existingImg.remove();
+        
         if (modalLoader) modalLoader.style.display = 'flex';
         modalFrame.style.opacity = "0";
         modalFrame.style.display = 'block';

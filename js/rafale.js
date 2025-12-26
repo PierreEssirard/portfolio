@@ -56,8 +56,8 @@ const loadingText = document.getElementById('loading-text');
 let isModelLoaded = false;
 let isTimeElapsed = false;
 
-// --- LOGIQUE MINUTERIE 5 SECONDES ---
-const duration = 2000; 
+// --- LOGIQUE MINUTERIE 1 SECONDE MINIMUM ---
+const duration = 1000; 
 const intervalTime = 50; 
 const step = 100 / (duration / intervalTime); 
 let currentProgress = 0;
@@ -76,10 +76,11 @@ const timer = setInterval(() => {
 function updateLoaderUI(percent) {
     if (progressBar) progressBar.style.width = `${percent}%`;
     if (progressPlane) progressPlane.style.left = `${percent}%`;
-    if (loadingText) loadingText.innerText = `Initialisation des systèmes... ${Math.round(percent)}%`;
+    if (loadingText) loadingText.innerText = `Chargement... ${Math.round(percent)}%`;
 }
 
 function checkLoadComplete() {
+    // Attend que le timer ET le modèle soient prêts
     if (isModelLoaded && isTimeElapsed) {
         if (globalLoader) {
             setTimeout(() => {
@@ -99,6 +100,7 @@ loader.load(
         
         // Appliquer la configuration initiale
         updateRafaleResponsive();
+        // Position initiale Desktop par défaut (sera écrasée par animate)
         rafale.position.set(4, 0, 0); 
         rafale.rotation.y = 1; 
         rafale.rotation.x = 1; 
@@ -135,18 +137,40 @@ function animate() {
         const floatingY = Math.sin(time * 1.2) * 0.08;
 
         if (window.innerWidth < 768) {
-            // --- MOBILE : FIXE AU DESSUS DU NOM ---
-            // On le place assez haut (y = 1.6) et centré (x = 0)
-            rafale.position.y = 1.6 + floatingY;
-            rafale.position.x = 0; 
+            // --- MOBILE : ATTERRISSAGE LONGUE DISTANCE ---
             
-            // Rotation spécifique pour bien le voir de face/dessous
+            // 1. Calcul de la DESCENTE (Translation Y)
+            // Facteur augmenté à 0.0125 pour contrer la remontée du canvas lors du scroll
+            // L'avion va descendre VISUELLEMENT sur l'écran
+            const descentY = scrollY * 0.0125; 
+            
+            // 2. Calcul de la SORTIE VERS LA GAUCHE (Translation X)
+            // On le fait partir vers la gauche dès le début du scroll
+            const moveLeftX = scrollY * 0.007; 
+
+            // Position de départ (1.6) + flottement - la grande descente
+            rafale.position.y = (1.6 + floatingY) - descentY;
+            
+            // Position X : Centre (0) - le mouvement vers la gauche
+            rafale.position.x = 0 - moveLeftX;
+            
+            // 3. Calcul du PIQUÉ DU NEZ (Rotation X)
+            const landingPitch = scrollY * 0.0012; 
+            let finalRotationX = 0.4 - landingPitch;
+            if (finalRotationX < -0.6) finalRotationX = -0.6;
+
+            // 4. Banking (Inclinaison sur l'aile gauche pour tourner)
+            let bankingZ = Math.sin(time * 0.5) * 0.1; 
+            // Ajout d'une inclinaison proportionnelle au déplacement latéral
+            bankingZ += moveLeftX * 0.2; 
+
+            rafale.rotation.x = finalRotationX; 
             rafale.rotation.y = 0; 
-            rafale.rotation.x = 0.4; // Légèrement cabré
-            rafale.rotation.z = Math.sin(time * 0.5) * 0.1; // Léger roulis
+            rafale.rotation.z = bankingZ;
+            
         } else {
             // --- DESKTOP : TRAVERSÉE NORMALE ---
-            rafale.position.y = floatingY - 0.2; 
+            rafale.position.y = floatingY; 
             rafale.position.x = 4 - (scrollY * 0.015);
             rafale.rotation.y = 0; 
             rafale.rotation.x = 0;

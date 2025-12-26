@@ -152,4 +152,40 @@
         grid-template-columns: 1fr; 
         gap: 30px;
     }
+
+    /* 8. OPTIMISATION DES GRAPHIQUES (Iframe) SUR MOBILE */
+    #modal-media-view {
+        overflow: hidden; /* Empêche le débordement du scale */
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-header {
+        flex-shrink: 0; /* Empêche le header d'être écrasé */
+        /* MODIFICATION : On laisse le header prendre toute la hauteur nécessaire pour voir les boutons */
+        max-height: none; 
+        height: auto;
+        overflow-y: visible;
+        padding-bottom: 10px;
+    }
+
+    #map-frame {
+        /* --- TECHNIQUE DE DOWNSCALING (ZOOM OUT MAXIMAL) --- */
+        /* On force l'iframe à être 300% plus large que l'écran mobile */
+        width: 300%; 
+        
+        /* On augmente encore la hauteur pour prendre tout l'écran */
+        height: 5000vh; 
+        
+        /* On dézoome fortement (1/3) pour que ça rentre dans la largeur */
+        /* 100 / 300 = 0.3333 */
+        transform: scale(0.3333);
+        transform-origin: top left;
+        
+        /* Layout */
+        flex-grow: 1;
+        display: block;
+        margin-top: 10px; /* Petit espace avec les boutons */
+    }
 }

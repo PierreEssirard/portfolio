@@ -39,11 +39,14 @@
         margin-bottom: 12px; 
         font-size: 10px;
     }
+    
+    /* MODIFICATION : Titre PLUS GRAND sur mobile */
     h1 {
-        font-size: 36px; /* Un peu plus petit pour mobile */
+        font-size: 48px; /* Augmenté de 36px à 48px */
         margin-bottom: 12px;
         line-height: 1.1;
     }
+    
     .hero-content > p {
         font-size: 14px;
         margin-bottom: 24px;

@@ -27,7 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
 
-    // ... (Reste du code inchangé : Scroll Observer, Couleurs, Moteur 3D, Radii) ...
     // ---------------------------------------------------------
     // 1. SCROLL OBSERVER (Animations d'apparition)
     // ---------------------------------------------------------
@@ -40,6 +39,12 @@ document.addEventListener('DOMContentLoaded', () => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('reveal-visible');
+                
+                // Si la section portfolio devient visible, lancer l'animation des cubes
+                if (entry.target.id === 'portfolio') {
+                   startFallingCubes();
+                }
+                
                 scrollObserver.unobserve(entry.target);
             }
         });
@@ -50,6 +55,12 @@ document.addEventListener('DOMContentLoaded', () => {
         el.classList.add('reveal-on-scroll');
         scrollObserver.observe(el);
     });
+    
+    // On observe aussi la section portfolio pour lancer les cubes
+    const portfolioSection = document.getElementById('portfolio');
+    if(portfolioSection) {
+        scrollObserver.observe(portfolioSection);
+    }
 
     // --- COULEURS DES PROJETS ---
     // Bleu, Rouge, Marron, Vert
@@ -234,6 +245,107 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'ArrowLeft') { speedDirection = -1; currentSpeed = -BOOST_FORCE; } 
         else if (e.key === 'ArrowRight') { speedDirection = 1; currentSpeed = BOOST_FORCE; }
     });
+    
+    // ---------------------------------------------------------
+    // SYSTEME DE PARTICULES (CUBES CAMOUFLAGE) - VERSION 3D RÉELLE
+    // ---------------------------------------------------------
+    function startFallingCubes() {
+        const portfolio = document.getElementById('portfolio');
+        if(!portfolio) return;
+        
+        // Empêcher de lancer plusieurs fois
+        if(portfolio.dataset.cubesLaunched === "true") return;
+        portfolio.dataset.cubesLaunched = "true";
+
+        // MODIFICATION : Plus de cubes au début avec des délais échelonnés
+        setTimeout(() => createFallingCube(portfolio), 0);
+        setTimeout(() => createFallingCube(portfolio), 400);
+        setTimeout(() => createFallingCube(portfolio), 800);
+        setTimeout(() => createFallingCube(portfolio), 1200);
+        setTimeout(() => createFallingCube(portfolio), 1600);
+        
+        // MODIFICATION : Créer un nouveau cube toutes les secondes (plus fréquent)
+        setInterval(() => {
+            if(document.visibilityState === 'visible') {
+                createFallingCube(portfolio);
+            }
+        }, 1000);
+    }
+
+    function createFallingCube(container) {
+        const cube = document.createElement('div');
+        cube.classList.add('camo-cube');
+        
+        // Faces du cube
+        for(let j=0; j<6; j++) {
+            const face = document.createElement('div');
+            face.classList.add('camo-cube-face');
+            cube.appendChild(face);
+        }
+        
+        // Position aléatoire SUR LES COTÉS
+        const side = Math.random() > 0.5 ? 'left' : 'right';
+        const randomPos = Math.random() * 15;
+        
+        if (side === 'left') {
+            cube.style.left = randomPos + '%';
+        } else {
+            cube.style.left = (85 + randomPos) + '%';
+        }
+        
+        // Paramètres d'animation
+        const startY = -100;
+        const endY = window.innerHeight + 100;
+        const duration = 6000 + Math.random() * 4000; // 6-10 secondes
+        const startTime = Date.now();
+        
+        // Rotation aléatoire initiale
+        let rotX = Math.random() * 360;
+        let rotY = Math.random() * 360;
+        let rotZ = Math.random() * 360;
+        
+        // Vitesse de rotation aléatoire
+        const speedX = 0.5 + Math.random() * 1.5;
+        const speedY = 0.5 + Math.random() * 1.5;
+        const speedZ = 0.5 + Math.random() * 1.5;
+        
+        container.appendChild(cube);
+        
+        // Animation manuelle avec requestAnimationFrame
+        function animate() {
+            const elapsed = Date.now() - startTime;
+            const progress = elapsed / duration;
+            
+            if (progress >= 1) {
+                cube.remove();
+                return;
+            }
+            
+            // Position Y (chute)
+            const currentY = startY + (endY - startY) * progress;
+            
+            // Rotation continue
+            rotX += speedX;
+            rotY += speedY;
+            rotZ += speedZ;
+            
+            // Opacité (fade in/out)
+            let opacity = 1;
+            if (progress < 0.1) {
+                opacity = progress / 0.1;
+            } else if (progress > 0.9) {
+                opacity = (1 - progress) / 0.1;
+            }
+            
+            // Application du transform complet
+            cube.style.transform = `translateY(${currentY}px) rotateX(${rotX}deg) rotateY(${rotY}deg) rotateZ(${rotZ}deg)`;
+            cube.style.opacity = opacity;
+            
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+    }
 
     // ---------------------------------------------------------
     // FONCTIONS MODALE & NAVIGATION

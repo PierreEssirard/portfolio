@@ -173,8 +173,10 @@ function animate() {
             rafale.position.y = floatingY; 
             rafale.position.x = 4 - (scrollY * 0.015);
             rafale.rotation.y = 0; 
-            rafale.rotation.x = 0;
-            rafale.rotation.z = 0;
+            
+            // MODIFICATION : Légère inclinaison (Banking et Pitch) pour un effet plus dynamique
+            rafale.rotation.x = 1; // Légèrement cabré (pitch)
+            rafale.rotation.z = 0; // Légère inclinaison sur l'aile (roll)
         }
     }
 

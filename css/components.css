@@ -184,7 +184,7 @@
 
 .instruction-text {
     font-family: 'Outfit', sans-serif;
-    font-size: 14px; /* MODIFICATION : Texte plus gros sur PC (était 12px) */
+    font-size: 14px; /* Texte plus gros sur PC */
     font-weight: 700; 
     color: var(--text);
     letter-spacing: 0.5px;
@@ -426,7 +426,7 @@
     overflow: hidden; 
 }
 
-/* Vue Média : Configuration Flex pour Desktop (et Mobile) */
+/* Vue Média : Configuration Standard Desktop */
 #modal-media-view {
     width: 100%;
     height: 100%;
@@ -615,16 +615,13 @@
 }
 
 /* CONFIGURATION DE LA CARTE (IFRAME) - VERSION DESKTOP
-   MODIFICATION : RETOUR A UNE VERSION "STANDARD" (Moins de zoom, plus clean)
+   RETOUR AUX PARAMETRES STANDARD (Sans zoom agressif)
 */
 #map-frame {
-    /* 1. Largeur virtuelle normale (100% pour desktop) */
     width: 100%;
-    
-    /* 2. Hauteur virtuelle normale */
     height: 100%;
     
-    /* 3. Pas de scale ou scale léger */
+    /* Pas de dézoom spécial pour desktop */
     transform: none; 
     
     flex-grow: 1; /* Remplit l'espace restant naturellement */

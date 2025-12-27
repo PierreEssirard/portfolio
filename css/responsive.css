@@ -159,33 +159,122 @@
         position: relative;
         display: flex;
         flex-direction: column;
+        /* Force le conteneur parent à ne pas dépasser l'écran pour garder les contrôles visibles */
+        height: 100%; 
     }
 
     .modal-header {
         flex-shrink: 0; /* Empêche le header d'être écrasé */
-        /* MODIFICATION : On laisse le header prendre toute la hauteur nécessaire pour voir les boutons */
         max-height: none; 
         height: auto;
         overflow-y: visible;
         padding-bottom: 10px;
+        z-index: 10; /* S'assure que les boutons restent au-dessus */
+        background: var(--bg-card); /* Fond opaque pour cacher la carte qui glisse dessous */
+    }
+
+    /* MODIFICATION : Style spécifique pour l'instruction mobile dans la modale */
+    .modal-instruction {
+        font-size: 11px;
+        color: var(--accent); /* Couleur accent pour attirer l'oeil */
+        margin: 10px 0 15px 0; /* Espacement ajusté */
+        font-weight: 600;
+        text-align: center;
+        background: rgba(0,0,0,0.03); /* Fond très léger */
+        padding: 8px;
+        border-radius: 4px;
+        border: 1px dashed var(--border);
     }
 
     #map-frame {
-        /* --- TECHNIQUE DE DOWNSCALING (ZOOM OUT MAXIMAL) --- */
-        /* On force l'iframe à être 300% plus large que l'écran mobile */
+        /* --- TECHNIQUE DE SUPER DOWNSCALING --- */
+        /* 1. On élargit virtuellement la fenêtre à 300% de l'écran mobile */
         width: 300%; 
         
-        /* On augmente encore la hauteur pour prendre tout l'écran */
-        height: 5000vh; 
+        /* 2. HAUTEUR AJUSTÉE : On réduit la hauteur virtuelle pour éviter le vide immense en bas */
+        /* Avant c'était 250vh (trop grand). On passe à une valeur fixe calculée ou plus petite */
+        /* 180vh * 0.3333 ≈ 60vh réels, ce qui remplit bien le reste de l'écran sous les boutons */
+        height: 180vh; 
         
-        /* On dézoome fortement (1/3) pour que ça rentre dans la largeur */
-        /* 100 / 300 = 0.3333 */
+        /* 3. On dézoome */
         transform: scale(0.3333);
         transform-origin: top left;
         
         /* Layout */
-        flex-grow: 1;
+        flex-grow: 0; /* On ne laisse pas flex étirer, on contrôle la taille via height/scale */
         display: block;
-        margin-top: 10px; /* Petit espace avec les boutons */
+        margin-top: 0; 
+        background: white;
+        
+        /* Astuce : on utilise une marge négative en bas pour compenser l'espace vide créé par le scale */
+        /* Le scale réduit visuellement l'objet mais il occupe toujours sa place d'origine dans le flux */
+        /* Hauteur originale (180vh) - Hauteur scalée (60vh) = 120vh de vide à supprimer */
+        margin-bottom: -120vh; 
+    }
+
+    /* 9. STYLE DE LA POP-UP MOBILE (Ajouté) */
+    .mobile-warning-popup {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7); /* Fond sombre semi-transparent */
+        z-index: 4000; /* Au-dessus de tout (loader, header, etc.) */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+
+    .warning-content {
+        background: white;
+        padding: 30px 20px;
+        border-radius: 12px;
+        text-align: center;
+        max-width: 300px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes popIn {
+        from { transform: scale(0.8); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    .warning-icon {
+        font-size: 40px;
+        margin-bottom: 15px;
+    }
+
+    .warning-content h3 {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: var(--text);
+    }
+
+    .warning-content p {
+        font-size: 14px;
+        color: var(--text-dim);
+        line-height: 1.5;
+        margin-bottom: 20px;
+    }
+
+    .btn-warning-ok {
+        background: var(--accent);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        width: 100%;
+        transition: transform 0.2s;
+    }
+
+    .btn-warning-ok:active {
+        transform: scale(0.95);
     }
 }

@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- SÉLECTION DES ÉLÉMENTS DOM ---
     const container = document.getElementById('projects-container');
     const modal = document.getElementById('map-modal');
     const modalFrame = document.getElementById('map-frame');
@@ -12,6 +13,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalMediaView = document.getElementById('modal-media-view');
     const modalDetailsView = document.getElementById('modal-details-view');
     
+    // Nouveaux éléments pour la pop-up mobile
+    const mobileWarningPopup = document.getElementById('mobile-warning-popup');
+    const closeWarningBtn = document.getElementById('close-warning-btn');
+    
     // Nouveau bouton retour (dans le groupe de contrôles)
     const btnBackFloating = document.getElementById('btn-back-floating');
 
@@ -22,8 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
 
+    // ... (Reste du code inchangé : Scroll Observer, Couleurs, Moteur 3D, Radii) ...
     // ---------------------------------------------------------
-    // 1. SCROLL OBSERVER
+    // 1. SCROLL OBSERVER (Animations d'apparition)
     // ---------------------------------------------------------
     const observerOptions = {
         threshold: 0.1,
@@ -68,11 +74,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const BOOST_FORCE = 0.08;   
     const FRICTION = 0.95;      
 
+    // Fonction de redimensionnement responsive du carrousel
     function updateRadii() {
         const count = (typeof myProjects !== 'undefined' && Array.isArray(myProjects)) ? myProjects.length : 4;
         
         if (window.innerWidth < 768) {
-            // --- MOBILE : CARTES ENCORE PLUS PETITES ---
+            // --- MOBILE : CARTES PLUS PETITES ---
             const minRadiusX = 130; 
             const spacingPerCard = 160; 
             const calculatedRadius = (count * spacingPerCard) / (2 * Math.PI);
@@ -91,6 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     window.addEventListener('resize', updateRadii);
 
+    // Initialisation du carrousel
     if (typeof myProjects !== 'undefined') {
         container.innerHTML = ''; 
         updateRadii();
@@ -130,6 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
 
+            // Gestion des événements souris
             cardContainer.addEventListener('mouseenter', () => {
                 hoveredCard = cardContainer;
                 if (instructionTextElement) {
@@ -146,6 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
+            // Clic sur une carte => Ouvre les détails
             cardContainer.addEventListener('click', () => {
                 openDetailsModal(project, index);
             });
@@ -154,6 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cardElements.push(cardContainer);
         });
 
+        // Boucle d'animation principale
         function animateCarousel() {
             if (Math.abs(currentSpeed) > BASE_SPEED) {
                 currentSpeed *= FRICTION;
@@ -209,6 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error("Erreur: La variable 'myProjects' n'est pas définie.");
     }
 
+    // --- ACCÉLÉRATEURS (Boutons fléchés) ---
     if(prevBtn && nextBtn) {
         prevBtn.addEventListener('mousedown', () => {
             speedDirection = -1; currentSpeed = -BOOST_FORCE; 
@@ -224,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ---------------------------------------------------------
-    // FONCTIONS MODALE (REVISITÉES)
+    // FONCTIONS MODALE & NAVIGATION
     // ---------------------------------------------------------
 
     function clearModalContent() {
@@ -244,9 +256,20 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Cacher bouton retour
         if(btnBackFloating) btnBackFloating.style.display = 'none';
+        
+        // Cacher Pop-up warning si ouverte
+        if(mobileWarningPopup) mobileWarningPopup.style.display = 'none';
     }
 
-    // --- FONCTION : RETOUR ARRIÈRE ---
+    // --- GESTION DE LA POPUP MOBILE ---
+    // Fonction pour fermer la popup
+    if (closeWarningBtn) {
+        closeWarningBtn.addEventListener('click', () => {
+            if (mobileWarningPopup) mobileWarningPopup.style.display = 'none';
+        });
+    }
+
+    // --- FONCTION : RETOUR ARRIÈRE (Média vers Détails) ---
     function backToDetails() {
         // Pause vidéo si elle existe
         const existingVideo = document.getElementById('dynamic-video');
@@ -258,6 +281,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Cacher le bouton retour car on est revenu au début
         btnBackFloating.style.display = 'none';
+        
+        // Cacher Pop-up warning si ouverte
+        if(mobileWarningPopup) mobileWarningPopup.style.display = 'none';
     }
 
     if (btnBackFloating) {
@@ -268,7 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function openDetailsModal(project, index) {
         clearModalContent();
         
-        // MODIFICATION : On s'assure que le loader est masqué par défaut pour les détails texte
+        // Le loader n'est pas nécessaire pour le texte
         if (modalLoader) modalLoader.style.display = 'none';
 
         modal.style.display = 'flex';
@@ -276,7 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Récupération de la couleur du projet
         const accentColor = projectColors[index % projectColors.length];
-        
+
         // Construction du contenu HTML
         let interactiveSection = '';
         if (project.interactiveMap) {
@@ -350,8 +376,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const existingImg = document.getElementById('dynamic-image');
         if (existingImg) existingImg.remove();
 
-        // On affiche le loader ici seulement
+        // On affiche le loader ici seulement car il y a chargement réseau
         if (modalLoader) modalLoader.style.display = 'flex';
+
+        // --- GESTION DE L'AVERTISSEMENT MOBILE ---
+        // On vérifie si on est sur mobile ET si c'est un contenu interactif (iframe/map)
+        // Pas besoin pour les vidéos/images
+        if (window.innerWidth < 768 && type !== 'video' && type !== 'image') {
+            if (mobileWarningPopup) {
+                mobileWarningPopup.style.display = 'flex';
+            }
+        }
 
         const targetTitle = document.getElementById('modal-media-title');
 
@@ -395,6 +430,7 @@ document.addEventListener('DOMContentLoaded', () => {
             modalFrame.parentNode.insertBefore(img, modalFrame);
 
         } else {
+            // CAS DE LA CARTE INTERACTIVE (HTML/IFRAME)
             if (targetTitle) targetTitle.innerText = "Visualisation Interactive";
             if (mapControls) mapControls.style.display = 'flex'; 
             if (modalInstruction) modalInstruction.style.display = 'block';
@@ -402,15 +438,13 @@ document.addEventListener('DOMContentLoaded', () => {
             modalFrame.style.opacity = "0"; 
             modalFrame.style.display = 'block';
             
-            modalFrame.onload = () => {
-                modalFrame.style.transition = "opacity 0.5s ease";
-                modalFrame.style.opacity = "1";
-                if (modalLoader) modalLoader.style.display = 'none';
-            };
-            modalFrame.src = contentSrc;
+            // Appel de la fonction globale pour gérer le contenu initial de l'iframe
+            // Note: On utilise changeMap pour initialiser
+            window.changeMap(contentSrc);
         }
     }
 
+    // Gestionnaire de clic délégué pour le bouton interactif DANS la modale
     document.addEventListener('click', (e) => {
         if (e.target.classList.contains('btn-interactive')) {
             e.preventDefault();
@@ -431,6 +465,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (closeModal) closeModal.addEventListener('click', closeModalFunc);
     window.addEventListener('click', (e) => { if (e.target == modal) closeModalFunc(); });
 
+    // Fonction globale pour le changement de map (boutons en haut de la modale média)
     window.changeMap = function(url) {
         const existingVideo = document.getElementById('dynamic-video');
         if (existingVideo) existingVideo.remove();
@@ -441,6 +476,24 @@ document.addEventListener('DOMContentLoaded', () => {
         modalFrame.style.opacity = "0";
         modalFrame.style.display = 'block';
         modalFrame.src = url;
+
+        // --- GESTION DE L'INSTRUCTION DYNAMIQUE ---
+        // On récupère l'élément d'instruction dans la modale
+        const instructionEl = document.querySelector('.modal-instruction');
+        
+        if (instructionEl) {
+            // Liste des cartes nécessitant le clic droit (Pan)
+            // On vérifie si l'URL contient les mots clés des cartes complexes
+            if (url.includes('carte_US_par_etat') || url.includes('carte_US_par_région')) {
+                // Instruction SPÉCIALE pour les cartes 3D/Complexes (SANS EMOJI)
+                instructionEl.innerHTML = "<strong>Astuce :</strong> Maintenez le <strong>clic droit</strong> pour déplacer la carte (Pan).";
+                instructionEl.style.display = 'block';
+            } else {
+                // Instruction STANDARD pour les autres graphes
+                instructionEl.innerText = "Interagissez avec le graphique pour voir les détails.";
+            }
+        }
+
         modalFrame.onload = () => {
             modalFrame.style.opacity = "1";
             if (modalLoader) modalLoader.style.display = 'none';

@@ -184,7 +184,7 @@
 
 .instruction-text {
     font-family: 'Outfit', sans-serif;
-    font-size: 12px; 
+    font-size: 14px; /* MODIFICATION : Texte plus gros sur PC (était 12px) */
     font-weight: 700; 
     color: var(--text);
     letter-spacing: 0.5px;
@@ -426,11 +426,14 @@
     overflow: hidden; 
 }
 
+/* Vue Média : Configuration Flex pour Desktop (et Mobile) */
 #modal-media-view {
     width: 100%;
     height: 100%;
     display: flex;
     flex-direction: column;
+    overflow: hidden; 
+    position: relative;
 }
 
 #modal-details-view {
@@ -549,6 +552,7 @@
     border-color: var(--text);
 }
 
+/* Header Modal : Adaptation flexible (Desktop & Mobile) */
 .modal-header {
     padding: 24px 32px;
     border-bottom: 1px solid var(--border);
@@ -558,6 +562,12 @@
     background: var(--bg-card);
     flex-wrap: wrap; 
     gap: 15px;
+    
+    flex-shrink: 0; 
+    max-height: none; 
+    height: auto;
+    position: relative;
+    z-index: 10;
 }
 
 .modal-header h2 {
@@ -565,6 +575,15 @@
     margin: 0;
     font-weight: 600;
     letter-spacing: -0.3px;
+}
+
+.modal-instruction {
+    font-size: 12px;
+    color: var(--accent); /* Un peu plus visible */
+    margin-top: 10px;
+    margin-bottom: 5px;
+    font-style: italic;
+    width: 100%;
 }
 
 .map-controls {
@@ -595,10 +614,22 @@
     border-color: var(--text);
 }
 
+/* CONFIGURATION DE LA CARTE (IFRAME) - VERSION DESKTOP
+   MODIFICATION : RETOUR A UNE VERSION "STANDARD" (Moins de zoom, plus clean)
+*/
 #map-frame {
+    /* 1. Largeur virtuelle normale (100% pour desktop) */
     width: 100%;
-    flex-grow: 1;
-    background: var(--primary);
+    
+    /* 2. Hauteur virtuelle normale */
+    height: 100%;
+    
+    /* 3. Pas de scale ou scale léger */
+    transform: none; 
+    
+    flex-grow: 1; /* Remplit l'espace restant naturellement */
+    display: block;
+    background: white; /* Fond propre */
 }
 
 /* --- TIMELINE --- */
@@ -758,15 +789,17 @@
     padding: 0 20px;
 }
 
+/* --- BARRE DE PROGRESSION AVEC AVION --- */
 .progress-wrapper {
     position: relative;
     width: 100%;
     height: 10px;
     margin-bottom: 20px;
-    background: rgba(10, 10, 10, 0.05);
-    border-radius: 5px;
+    background: rgba(10, 10, 10, 0.05); /* Fond léger pour contraste */
+    border-radius: 5px; /* Arrondi */
 }
 
+/* Le fond gris de la barre */
 .progress-track {
     position: absolute;
     top: 0;
@@ -777,27 +810,30 @@
     border-radius: 5px;
 }
 
+/* La barre qui se remplit (noir) */
 .progress-bar {
     position: absolute;
     top: 0;
     left: 0;
-    width: 0%;
+    width: 0%; /* JS contrôlera ça */
     height: 100%;
     background: var(--text);
-    transition: width 0.1s linear;
+    transition: width 0.1s linear; /* Transition fluide */
     border-radius: 5px;
 }
 
+/* L'avion qui suit le bout de la barre */
 .progress-plane {
     position: absolute;
     top: 50%;
-    left: 0%; 
-    transform: translate(-50%, -50%) rotate(90deg);
+    left: 0%; /* JS contrôlera ça aussi */
+    transform: translate(-50%, -50%) rotate(90deg); /* 90deg pour pointer vers la droite */
     color: var(--text);
     transition: left 0.1s linear;
-    width: 60px;
+    width: 60px; /* BEAUCOUP PLUS GROS (était 32px) */
     height: 60px;
     z-index: 10;
+    /* Stylisation : Ombre portée pour l'effet de vol */
     filter: drop-shadow(0px 10px 15px rgba(0, 0, 0, 0.2));
 }
 
@@ -812,6 +848,7 @@
     text-transform: uppercase;
 }
 
+/* 2. Loader Modale (Local) */
 .modal-loader {
     position: absolute;
     top: 50%;

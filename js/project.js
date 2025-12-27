@@ -44,7 +44,7 @@ const myProjects = [
             "Logique de contrôle-commande : Asservissement proportionnel et machines à états."
         ],
         tech: ["C / C++", "STM32", "CubeIDE", "I2C / UART / PWM", "Hardware"],
-        interactiveMap: "assets/thumbnails/ferme.jpg",
+        interactiveMap: "assets/thumbnails/femre.jpg",
         type: "image",
         buttonText: "Voir la maquette",
         imageText: "Photo du montage disponible",

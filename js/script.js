@@ -76,6 +76,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
 
+    // --- PATCH DE SÉCURITÉ : Empêcher le rechargement sur les boutons map ---
+    // On sélectionne tous les boutons dans les contrôles de map et on force le preventDefault
+    const mapButtons = document.querySelectorAll('.map-controls button');
+    mapButtons.forEach(btn => {
+        // Pour le clic standard
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+        });
+        // Pour le touchstart (mobile) pour être sûr
+        btn.addEventListener('touchstart', (e) => {
+            // On ne preventDefault pas ici sinon le click ne part pas, 
+            // mais on s'assure que ça ne propage pas
+            e.stopPropagation();
+        }, {passive: true});
+    });
+
     // ---------------------------------------------------------
     // 1. SCROLL OBSERVER (Animations d'apparition)
     // ---------------------------------------------------------
@@ -145,7 +161,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!instructionTextElement) return;
 
         if (window.innerWidth < 768) {
-            // NOUVEAU TEXTE PLUS COHÉRENT
             instructionTextElement.innerText = "Touchez et glissez pour tourner • Tapez pour ouvrir";
         } else {
             instructionTextElement.innerText = "Survolez pour Zoomer • Cliquez pour Explorer";
@@ -336,6 +351,12 @@ document.addEventListener('DOMContentLoaded', () => {
         carouselScene.addEventListener('touchmove', (e) => {
             if (!isDragging) return;
             
+            // --- FIX SCROLL MOBILE : BLOQUER LE SCROLL VERTICAL ---
+            // Si on bouge le carrousel, on empêche la page de scroller
+            if(e.cancelable) {
+                e.preventDefault(); 
+            }
+
             const currentX = e.touches[0].clientX;
             const now = Date.now();
             const deltaX = currentX - lastTouchX; // Différence depuis la dernière frame
@@ -363,7 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
             lastTouchX = currentX;
             lastTouchTime = now;
             
-        }, {passive: true});
+        }, {passive: false}); // <--- PASSIVE FALSE OBLIGATOIRE POUR preventDefault()
 
         // 3. TOUCH END : On relâche avec inertie
         carouselScene.addEventListener('touchend', () => {
@@ -375,16 +396,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (touchVelocity < -maxVelocity) touchVelocity = -maxVelocity;
             
             // --- TRANSFERT DE L'INERTIE ---
-            // La boucle animateCarousel fait : currentAngle -= currentSpeed
-            // Si on glissait vers la GAUCHE (deltaX < 0), l'angle diminuait.
-            // On veut qu'il continue de diminuer.
-            // Donc 'currentSpeed' doit être POSITIF (car on soustrait une vitesse positive).
-            // 'touchVelocity' est négative. Donc : currentSpeed = -touchVelocity.
-            
             currentSpeed = -touchVelocity;
             
             // Mise à jour de la direction par défaut pour la suite
-            // Si on a lancé vers la gauche, il continuera vers la gauche même après avoir ralenti
             if (currentSpeed > 0) speedDirection = 1; 
             else if (currentSpeed < 0) speedDirection = -1;
             
@@ -650,6 +664,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (closeModal) closeModal.addEventListener('click', closeModalFunc);
     window.addEventListener('click', (e) => { if (e.target == modal) closeModalFunc(); });
 
+    // --- MODIFICATION ICI : Uniformisation Mobile ---
     window.changeMap = function(url) {
         const existingVideo = document.getElementById('dynamic-video');
         if (existingVideo) existingVideo.remove();
@@ -663,10 +678,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const instructionEl = document.querySelector('.modal-instruction');
         if (instructionEl) {
-            if (url.includes('carte_US_par_etat') || url.includes('carte_US_par_région')) {
+            const isMobile = window.innerWidth < 768; // Détection mobile
+
+            // On applique la logique spécifique "Clic Droit" SEULEMENT si on est sur Desktop ET carte complexe
+            if (!isMobile && (url.includes('carte_US_par_etat') || url.includes('carte_US_par_région'))) {
                 instructionEl.innerHTML = "<strong>Astuce :</strong> Maintenez le <strong>clic droit</strong> pour déplacer la carte (Pan).";
                 instructionEl.style.display = 'block';
             } else {
+                // Sur mobile OU pour les autres graphes (Sunburst, etc.), texte standard
                 instructionEl.innerText = "Interagissez avec le graphique pour voir les détails.";
             }
         }

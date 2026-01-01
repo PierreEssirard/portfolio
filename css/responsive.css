@@ -25,16 +25,25 @@
         text-align: center;
         display: block; 
     }
+    
     .hero-content {
         height: 100vh;
         display: flex;
         flex-direction: column;
-        justify-content: center; /* On garde center mais on décale via padding */
+        
+        /* CORRECTION DU CENTRAGE : Utilisation de justify-content */
+        justify-content: center; 
         align-items: center;
-        /* Augmentation significative pour pousser le texte sous l'avion */
-        padding-top: 25vh; 
-        padding-bottom: 50px;
+        
+        /* SUPPRESSION DU PADDING QUI DÉCALAIT TOUT VERS LE BAS */
+        padding-top: 0; 
+        padding-bottom: 20px;
+        
+        /* Assure que le texte reste visible au-dessus de tout */
+        position: relative;
+        z-index: 10;
     }
+
     .tag {
         margin-bottom: 12px; 
         font-size: 10px;
@@ -61,6 +70,11 @@
     .btn {
         padding: 12px 24px;
         font-size: 13px;
+    }
+
+    /* AJUSTEMENT DE L'INDICATEUR DE SCROLL POUR MOBILE */
+    .scroll-indicator {
+        bottom: 80px; /* Remonté pour éviter la barre d'adresse ou les boutons de navigation */
     }
 
     /* 3. Portfolio : Ajustement de l'espace */

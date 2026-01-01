@@ -493,6 +493,10 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             e.stopPropagation();
             
+            // ENREGISTRER DANS LE SESSION STORAGE
+            // Cela empêche la popup de revenir tant que l'onglet n'est pas fermé
+            sessionStorage.setItem('mobileWarningDismissed', 'true');
+
             if (mobileWarningPopup) mobileWarningPopup.style.display = 'none';
         });
     }
@@ -608,9 +612,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- GESTION DE L'AVERTISSEMENT MOBILE ---
         // On vérifie si on est sur mobile ET si c'est un contenu interactif (iframe/map)
-        // Pas besoin pour les vidéos/images
+        // ET surtout, on vérifie si l'utilisateur ne l'a pas déjà fermé !
         if (window.innerWidth < 768 && type !== 'video' && type !== 'image') {
-            if (mobileWarningPopup) {
+            const dismissed = sessionStorage.getItem('mobileWarningDismissed');
+            if (mobileWarningPopup && !dismissed) {
                 mobileWarningPopup.style.display = 'flex';
             }
         }

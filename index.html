@@ -203,7 +203,7 @@
                     <div class="warning-icon">📱</div>
                     <h3>Affichage Mobile</h3>
                     <p>Pour une lecture optimale des graphiques interactifs et des légendes, nous vous conseillons d'utiliser un ordinateur.</p>
-                    <button id="close-warning-btn" class="btn-warning-ok">J'ai compris</button>
+                    <button id="close-warning-btn" class="btn-warning-ok" type="button">J'ai compris</button>
                 </div>
             </div>
 
@@ -220,12 +220,13 @@
                     <p class="modal-instruction">Cliquez sur les boutons ci-dessous pour changer de graphique :</p>
                     
                     <div class="map-controls">
-                        <button onclick="changeMap('maps/carte_US_par_etat.html')">États</button>
-                        <button onclick="changeMap('maps/carte_US_par_région.html')">Comtés</button>
-                        <button onclick="changeMap('maps/graphe_sunburst.html')">Sunburst</button>
-                        <button onclick="changeMap('maps/graphe_grandes_villes.html')">Grandes Villes</button>
-                        <button onclick="changeMap('maps/graphe_petites_villes.html')">Petites Villes</button>
-                        <button onclick="changeMap('maps/graphe_lieu_de_vote.html')">Lieux de Vote</button>
+                        <!-- Ajout de type="button" pour éviter le rechargement de page sur mobile -->
+                        <button type="button" onclick="changeMap('maps/carte_US_par_etat.html')">États</button>
+                        <button type="button" onclick="changeMap('maps/carte_US_par_région.html')">Comtés</button>
+                        <button type="button" onclick="changeMap('maps/graphe_sunburst.html')">Sunburst</button>
+                        <button type="button" onclick="changeMap('maps/graphe_grandes_villes.html')">Grandes Villes</button>
+                        <button type="button" onclick="changeMap('maps/graphe_petites_villes.html')">Petites Villes</button>
+                        <button type="button" onclick="changeMap('maps/graphe_lieu_de_vote.html')">Lieux de Vote</button>
                     </div>
                 </div>
                 <iframe id="map-frame" src="" frameborder="0"></iframe>

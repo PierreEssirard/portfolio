@@ -70,6 +70,7 @@
             </div>
         </div>
 
+        <!-- Indicateur de scroll (Visible par défaut via components.css) -->
         <div class="scroll-indicator">
             <span class="scroll-text">Défiler vers le bas</span>
             <div class="scroll-arrow">↓</div>
@@ -100,12 +101,12 @@
 
         <!-- Contrôles de navigation -->
         <div class="carousel-controls">
-            <button id="prev-btn" class="nav-btn" aria-label="Projet précédent">
+            <button id="prev-btn" class="nav-btn" aria-label="Projet précédent" type="button">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M19 12H5M12 19l-7-7 7-7"/>
                 </svg>
             </button>
-            <button id="next-btn" class="nav-btn" aria-label="Projet suivant">
+            <button id="next-btn" class="nav-btn" aria-label="Projet suivant" type="button">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M5 12h14M12 5l7 7-7 7"/>
                 </svg>
@@ -188,7 +189,7 @@
             
             <!-- GROUPE DE CONTRÔLES (RETOUR ET CROIX) -->
             <div class="modal-controls-group">
-                <button id="btn-back-floating" class="control-btn back-btn" style="display: none;">← Retour</button>
+                <button id="btn-back-floating" class="control-btn back-btn" style="display: none;" type="button">← Retour</button>
                 <div class="close-modal control-btn">✕</div>
             </div>
             
@@ -203,6 +204,8 @@
                     <div class="warning-icon">📱</div>
                     <h3>Affichage Mobile</h3>
                     <p>Pour une lecture optimale des graphiques interactifs et des légendes, nous vous conseillons d'utiliser un ordinateur.</p>
+                    
+                    <!-- CRUCIAL : type="button" pour éviter le submit -->
                     <button id="close-warning-btn" class="btn-warning-ok" type="button">J'ai compris</button>
                 </div>
             </div>
@@ -220,7 +223,7 @@
                     <p class="modal-instruction">Cliquez sur les boutons ci-dessous pour changer de graphique :</p>
                     
                     <div class="map-controls">
-                        <!-- Ajout de type="button" pour éviter le rechargement de page sur mobile -->
+                        <!-- AJOUT SYSTÉMATIQUE DE type="button" POUR BLOQUER LE RECHARGEMENT -->
                         <button type="button" onclick="changeMap('maps/carte_US_par_etat.html')">États</button>
                         <button type="button" onclick="changeMap('maps/carte_US_par_région.html')">Comtés</button>
                         <button type="button" onclick="changeMap('maps/graphe_sunburst.html')">Sunburst</button>

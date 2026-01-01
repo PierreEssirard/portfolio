@@ -77,7 +77,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextBtn = document.getElementById('next-btn');
 
     // --- PATCH DE SÉCURITÉ : Empêcher le rechargement sur les boutons map ---
-    // On sélectionne tous les boutons dans les contrôles de map et on force le preventDefault
     const mapButtons = document.querySelectorAll('.map-controls button');
     mapButtons.forEach(btn => {
         // Pour le clic standard
@@ -86,8 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         // Pour le touchstart (mobile) pour être sûr
         btn.addEventListener('touchstart', (e) => {
-            // On ne preventDefault pas ici sinon le click ne part pas, 
-            // mais on s'assure que ça ne propage pas
             e.stopPropagation();
         }, {passive: true});
     });
@@ -104,12 +101,9 @@ document.addEventListener('DOMContentLoaded', () => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('reveal-visible');
-                
-                // Si la section portfolio devient visible, lancer l'animation des cubes
                 if (entry.target.id === 'portfolio') {
                    startFallingCubes();
                 }
-                
                 scrollObserver.unobserve(entry.target);
             }
         });
@@ -154,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastTouchX = 0;
     let lastTouchTime = 0;
     let touchVelocity = 0;
-    let hasMoved = false; // Pour différencier un clic d'un drag
+    let hasMoved = false; 
 
     // Fonction de mise à jour des instructions
     function updateInstructionsText() {
@@ -244,10 +238,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             // GESTION DU CLIC INTELLIGENTE
-            // N'ouvre PAS le projet si on vient de faire glisser le carrousel (drag)
             cardContainer.addEventListener('click', (e) => {
                 if (hasMoved && window.innerWidth < 768) {
-                    // C'était un mouvement de doigt, on annule le clic
                     return;
                 }
                 openDetailsModal(project, index);
@@ -257,22 +249,16 @@ document.addEventListener('DOMContentLoaded', () => {
             cardElements.push(cardContainer);
         });
 
-        // --- BOUCLE D'ANIMATION ---
         function animateCarousel() {
-            // Si l'utilisateur est en train de toucher l'écran, on ne met PAS à jour la vitesse
-            // car l'angle est contrôlé directement par 'touchmove'.
             if (!isDragging) {
                 if (Math.abs(currentSpeed) > BASE_SPEED) {
-                    currentSpeed *= FRICTION; // Ralentissement naturel
+                    currentSpeed *= FRICTION; 
                 } else {
-                    currentSpeed = BASE_SPEED * speedDirection; // Vitesse de croisière
+                    currentSpeed = BASE_SPEED * speedDirection; 
                 }
-                
-                // Rotation automatique standard
                 currentAngle -= currentSpeed;
             }
 
-            // Mise à jour visuelle des cartes
             cardElements.forEach(card => {
                 const baseAngle = parseFloat(card.dataset.baseAngle);
                 const theta = currentAngle + baseAngle;
@@ -334,82 +320,59 @@ document.addEventListener('DOMContentLoaded', () => {
     const carouselScene = document.querySelector('.carousel-scene');
     
     if (carouselScene) {
-        // 1. TOUCH START : On attrape le carrousel
         carouselScene.addEventListener('touchstart', (e) => {
             isDragging = true;
-            hasMoved = false; // Reset du flag de mouvement
+            hasMoved = false; 
             startTouchX = e.touches[0].clientX;
             lastTouchX = startTouchX;
             lastTouchTime = Date.now();
-            
-            // On stoppe la vitesse auto pour avoir un contrôle immédiat
             currentSpeed = 0;
-            
         }, {passive: true});
 
-        // 2. TOUCH MOVE : On déplace le carrousel (1:1)
         carouselScene.addEventListener('touchmove', (e) => {
             if (!isDragging) return;
             
             // --- FIX SCROLL MOBILE : BLOQUER LE SCROLL VERTICAL ---
-            // Si on bouge le carrousel, on empêche la page de scroller
             if(e.cancelable) {
                 e.preventDefault(); 
             }
 
             const currentX = e.touches[0].clientX;
             const now = Date.now();
-            const deltaX = currentX - lastTouchX; // Différence depuis la dernière frame
+            const deltaX = currentX - lastTouchX; 
             const deltaTime = now - lastTouchTime;
             
-            // Détection du seuil de mouvement pour annuler le clic
             if (Math.abs(currentX - startTouchX) > 10) {
                 hasMoved = true;
             }
 
-            // Sensibilité : Ajuste la vitesse de rotation par rapport aux pixels glissés
-            // 0.008 donne un bon feeling "1 pour 1" sur mobile
             const sensitivity = 0.008; 
-            
-            // Application directe à l'angle (Contrôle temps réel)
-            // Note: deltaX > 0 (glisser vers la droite) -> angle augmente -> carrousel tourne vers droite
             currentAngle += deltaX * sensitivity; 
             
-            // Calcul de la vélocité instantanée pour le "lancer" final
             if (deltaTime > 0) {
-                // Facteur 16 pour convertir en vitesse par frame (60fps) approx
                 touchVelocity = (deltaX * sensitivity) / deltaTime * 16; 
             }
             
             lastTouchX = currentX;
             lastTouchTime = now;
-            
-        }, {passive: false}); // <--- PASSIVE FALSE OBLIGATOIRE POUR preventDefault()
+        }, {passive: false});
 
-        // 3. TOUCH END : On relâche avec inertie
         carouselScene.addEventListener('touchend', () => {
             isDragging = false;
             
-            // Plafond pour éviter un lancer supersonique
             const maxVelocity = 0.2; 
             if (touchVelocity > maxVelocity) touchVelocity = maxVelocity;
             if (touchVelocity < -maxVelocity) touchVelocity = -maxVelocity;
             
-            // --- TRANSFERT DE L'INERTIE ---
             currentSpeed = -touchVelocity;
             
-            // Mise à jour de la direction par défaut pour la suite
             if (currentSpeed > 0) speedDirection = 1; 
             else if (currentSpeed < 0) speedDirection = -1;
             
-            // Si l'utilisateur s'est arrêté net avant de lâcher, on reprend la vitesse de base
             if (Math.abs(touchVelocity) < 0.002) {
                 currentSpeed = BASE_SPEED * speedDirection;
             }
-            
-            // Reset velocity
             touchVelocity = 0;
-            
         });
     }
 
@@ -513,12 +476,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if(mobileWarningPopup) mobileWarningPopup.style.display = 'none';
     }
 
+    // --- FIX GHOST CLICK & MODIF POPUP SYSTÉMATIQUE ---
     if (closeWarningBtn) {
-        closeWarningBtn.addEventListener('click', (e) => {
-            e.preventDefault(); e.stopPropagation();
-            sessionStorage.setItem('mobileWarningDismissed', 'true');
+        // Cette fonction ferme la popup SANS enregistrer le choix en mémoire
+        const dismissWarning = (e) => {
+            e.preventDefault(); 
+            e.stopPropagation();
+            
+            // J'ai supprimé la ligne : sessionStorage.setItem('mobileWarningDismissed', 'true');
+            // Comme ça, au prochain chargement, la popup reviendra.
             if (mobileWarningPopup) mobileWarningPopup.style.display = 'none';
-        });
+        };
+
+        closeWarningBtn.addEventListener('touchend', dismissWarning);
+        closeWarningBtn.addEventListener('click', dismissWarning);
     }
 
     function backToDetails() {
@@ -590,9 +561,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (modalLoader) modalLoader.style.display = 'flex';
 
+        // --- AFFICHAGE SYSTÉMATIQUE POPUP MOBILE ---
         if (window.innerWidth < 768 && type !== 'video' && type !== 'image') {
-            const dismissed = sessionStorage.getItem('mobileWarningDismissed');
-            if (mobileWarningPopup && !dismissed) mobileWarningPopup.style.display = 'flex';
+            // J'ai supprimé la vérification 'sessionStorage' ici aussi.
+            if (mobileWarningPopup) mobileWarningPopup.style.display = 'flex';
         }
 
         const targetTitle = document.getElementById('modal-media-title');
@@ -664,7 +636,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (closeModal) closeModal.addEventListener('click', closeModalFunc);
     window.addEventListener('click', (e) => { if (e.target == modal) closeModalFunc(); });
 
-    // --- MODIFICATION ICI : Uniformisation Mobile ---
     window.changeMap = function(url) {
         const existingVideo = document.getElementById('dynamic-video');
         if (existingVideo) existingVideo.remove();
@@ -678,14 +649,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const instructionEl = document.querySelector('.modal-instruction');
         if (instructionEl) {
-            const isMobile = window.innerWidth < 768; // Détection mobile
+            const isMobile = window.innerWidth < 768; 
 
-            // On applique la logique spécifique "Clic Droit" SEULEMENT si on est sur Desktop ET carte complexe
             if (!isMobile && (url.includes('carte_US_par_etat') || url.includes('carte_US_par_région'))) {
                 instructionEl.innerHTML = "<strong>Astuce :</strong> Maintenez le <strong>clic droit</strong> pour déplacer la carte (Pan).";
                 instructionEl.style.display = 'block';
             } else {
-                // Sur mobile OU pour les autres graphes (Sunburst, etc.), texte standard
                 instructionEl.innerText = "Interagissez avec le graphique pour voir les détails.";
             }
         }

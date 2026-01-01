@@ -76,6 +76,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
 
+    // Variable pour stocker l'URL en attente (Lazy Loading)
+    let pendingMapUrl = null;
+
     // --- PATCH DE SÉCURITÉ : Empêcher le rechargement sur les boutons map ---
     const mapButtons = document.querySelectorAll('.map-controls button');
     mapButtons.forEach(btn => {
@@ -476,16 +479,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if(mobileWarningPopup) mobileWarningPopup.style.display = 'none';
     }
 
-    // --- FIX GHOST CLICK & MODIF POPUP SYSTÉMATIQUE ---
+    // --- LOGIQUE POPUP ET LAZY LOADING ---
     if (closeWarningBtn) {
-        // Cette fonction ferme la popup SANS enregistrer le choix en mémoire
         const dismissWarning = (e) => {
             e.preventDefault(); 
             e.stopPropagation();
             
-            // J'ai supprimé la ligne : sessionStorage.setItem('mobileWarningDismissed', 'true');
-            // Comme ça, au prochain chargement, la popup reviendra.
+            // 1. Fermer la popup
             if (mobileWarningPopup) mobileWarningPopup.style.display = 'none';
+            
+            // 2. DÉCLENCHER LE CHARGEMENT DIFFÉRÉ MAINTENANT
+            if (pendingMapUrl) {
+                // On appelle changeMap avec le flag "force" à true
+                window.changeMap(pendingMapUrl, true);
+                pendingMapUrl = null; // Reset
+            }
         };
 
         closeWarningBtn.addEventListener('touchend', dismissWarning);
@@ -499,6 +507,9 @@ document.addEventListener('DOMContentLoaded', () => {
         modalDetailsView.style.display = 'block';
         btnBackFloating.style.display = 'none';
         if(mobileWarningPopup) mobileWarningPopup.style.display = 'none';
+        
+        // Reset pending url si on revient en arrière sans avoir accepté
+        pendingMapUrl = null;
     }
     if (btnBackFloating) btnBackFloating.addEventListener('click', backToDetails);
 
@@ -558,64 +569,85 @@ document.addEventListener('DOMContentLoaded', () => {
         if (existingVideo) existingVideo.remove();
         const existingImg = document.getElementById('dynamic-image');
         if (existingImg) existingImg.remove();
+        
+        // --- LOGIQUE LAZY LOADING ---
+        // Si Mobile ET Carte Interactive : On retarde le chargement
+        const isMobileMap = (window.innerWidth < 768 && type !== 'video' && type !== 'image');
 
-        if (modalLoader) modalLoader.style.display = 'flex';
-
-        // --- AFFICHAGE SYSTÉMATIQUE POPUP MOBILE ---
-        if (window.innerWidth < 768 && type !== 'video' && type !== 'image') {
-            // J'ai supprimé la vérification 'sessionStorage' ici aussi.
+        if (isMobileMap) {
+            // 1. On stocke l'URL pour plus tard
+            pendingMapUrl = contentSrc;
+            
+            // 2. On affiche la pop-up
             if (mobileWarningPopup) mobileWarningPopup.style.display = 'flex';
-        }
-
-        const targetTitle = document.getElementById('modal-media-title');
-
-        if (type === 'video') {
-            if (targetTitle) targetTitle.innerText = "Démonstration (Vidéo)";
-            if (mapControls) mapControls.style.display = 'none';
-            if (modalInstruction) modalInstruction.style.display = 'none';
             
-            const video = document.createElement('video');
-            video.id = 'dynamic-video';
-            video.src = contentSrc;
-            video.controls = true;
-            video.autoplay = true;
-            video.style.width = "100%";
-            video.style.height = "100%";
-            video.style.objectFit = "contain"; 
-            video.style.outline = "none";
-            video.style.background = "#000"; 
+            // 3. On prépare l'UI (titres, boutons) mais SANS CHARGER LA CARTE
+            // On masque le loader pour ne pas qu'il tourne dans le vide
+            if (modalLoader) modalLoader.style.display = 'none';
             
-            video.onloadeddata = () => { if (modalLoader) modalLoader.style.display = 'none'; };
-            setTimeout(() => { if(modalLoader) modalLoader.style.display = 'none'; }, 2000);
-            
-            modalFrame.parentNode.insertBefore(video, modalFrame);
-
-        } else if (type === 'image') {
-            if (targetTitle) targetTitle.innerText = "Aperçu de la Maquette";
-            if (mapControls) mapControls.style.display = 'none';
-            if (modalInstruction) modalInstruction.style.display = 'none';
-            
-            const img = document.createElement('img');
-            img.id = 'dynamic-image';
-            img.src = contentSrc;
-            img.style.width = "100%";
-            img.style.height = "100%";
-            img.style.objectFit = "contain"; 
-            img.style.display = "block";
-            
-            img.onload = () => { if (modalLoader) modalLoader.style.display = 'none'; };
-            setTimeout(() => { if(modalLoader) modalLoader.style.display = 'none'; }, 2000);
-            
-            modalFrame.parentNode.insertBefore(img, modalFrame);
-
-        } else {
+            const targetTitle = document.getElementById('modal-media-title');
             if (targetTitle) targetTitle.innerText = "Visualisation Interactive";
             if (mapControls) mapControls.style.display = 'flex'; 
             if (modalInstruction) modalInstruction.style.display = 'block';
+
+            // NOTE : On n'appelle PAS window.changeMap ici !
             
-            modalFrame.style.opacity = "0"; 
-            modalFrame.style.display = 'block';
-            window.changeMap(contentSrc);
+        } else {
+            // CHARGEMENT STANDARD (Desktop ou Video/Image)
+            if (modalLoader) modalLoader.style.display = 'flex';
+
+            const targetTitle = document.getElementById('modal-media-title');
+
+            if (type === 'video') {
+                if (targetTitle) targetTitle.innerText = "Démonstration (Vidéo)";
+                if (mapControls) mapControls.style.display = 'none';
+                if (modalInstruction) modalInstruction.style.display = 'none';
+                
+                const video = document.createElement('video');
+                video.id = 'dynamic-video';
+                video.src = contentSrc;
+                video.controls = true;
+                video.autoplay = true;
+                video.style.width = "100%";
+                video.style.height = "100%";
+                video.style.objectFit = "contain"; 
+                video.style.outline = "none";
+                video.style.background = "#000"; 
+                
+                video.onloadeddata = () => { if (modalLoader) modalLoader.style.display = 'none'; };
+                setTimeout(() => { if(modalLoader) modalLoader.style.display = 'none'; }, 2000);
+                
+                modalFrame.parentNode.insertBefore(video, modalFrame);
+
+            } else if (type === 'image') {
+                if (targetTitle) targetTitle.innerText = "Aperçu de la Maquette";
+                if (mapControls) mapControls.style.display = 'none';
+                if (modalInstruction) modalInstruction.style.display = 'none';
+                
+                const img = document.createElement('img');
+                img.id = 'dynamic-image';
+                img.src = contentSrc;
+                img.style.width = "100%";
+                img.style.height = "100%";
+                img.style.objectFit = "contain"; 
+                img.style.display = "block";
+                
+                img.onload = () => { if (modalLoader) modalLoader.style.display = 'none'; };
+                setTimeout(() => { if(modalLoader) modalLoader.style.display = 'none'; }, 2000);
+                
+                modalFrame.parentNode.insertBefore(img, modalFrame);
+
+            } else {
+                if (targetTitle) targetTitle.innerText = "Visualisation Interactive";
+                if (mapControls) mapControls.style.display = 'flex'; 
+                if (modalInstruction) modalInstruction.style.display = 'block';
+                
+                modalFrame.style.opacity = "0"; 
+                modalFrame.style.display = 'block';
+                
+                // Appel direct car on n'est pas sur mobile
+                window.changeMap(contentSrc);
+            }
         }
     }
 
@@ -636,12 +668,29 @@ document.addEventListener('DOMContentLoaded', () => {
     if (closeModal) closeModal.addEventListener('click', closeModalFunc);
     window.addEventListener('click', (e) => { if (e.target == modal) closeModalFunc(); });
 
-    window.changeMap = function(url) {
+    // --- MODIFICATION DE CHANGEMAP POUR GÉRER LE FORCE LOAD ---
+    // Ajout du paramètre 'forceLoad' (booléen)
+    window.changeMap = function(url, forceLoad = false) {
+        
+        // Néttoyage systématique
         const existingVideo = document.getElementById('dynamic-video');
         if (existingVideo) existingVideo.remove();
         const existingImg = document.getElementById('dynamic-image');
         if (existingImg) existingImg.remove();
         
+        // --- LOGIQUE DE BASCULEMENT DE CARTE (Switching maps) ---
+        // Si on est sur mobile, qu'on clique sur un bouton de changement de carte
+        // ET que ce n'est pas un chargement forcé (via le bouton "J'ai compris")
+        const isMobile = window.innerWidth < 768;
+        if (isMobile && !forceLoad) {
+            // On intercepte le changement
+            pendingMapUrl = url;
+            if (mobileWarningPopup) mobileWarningPopup.style.display = 'flex';
+            if (modalLoader) modalLoader.style.display = 'none'; // Pas de loader
+            return; // ON ARRÊTE TOUT ICI
+        }
+
+        // Si on arrive ici, c'est soit Desktop, soit un chargement forcé (autorisé)
         if (modalLoader) modalLoader.style.display = 'flex';
         modalFrame.style.opacity = "0";
         modalFrame.style.display = 'block';
@@ -649,8 +698,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const instructionEl = document.querySelector('.modal-instruction');
         if (instructionEl) {
-            const isMobile = window.innerWidth < 768; 
-
             if (!isMobile && (url.includes('carte_US_par_etat') || url.includes('carte_US_par_région'))) {
                 instructionEl.innerHTML = "<strong>Astuce :</strong> Maintenez le <strong>clic droit</strong> pour déplacer la carte (Pan).";
                 instructionEl.style.display = 'block';

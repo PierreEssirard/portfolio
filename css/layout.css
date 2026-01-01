@@ -76,7 +76,8 @@ nav a:hover::after {
     align-items: center;
     padding: 0 48px;
     overflow: hidden;
-    background: linear-gradient(135deg, #fafafa 0%, #ffffff 100%);
+    
+    background: var(--bg-hero);
 }
 
 #canvas-container {
@@ -177,7 +178,9 @@ h1 {
 
 /* --- FOOTER --- */
 #contact {
-    background: var(--text);
+
+    background: var(--bg-contact);
+    
     color: var(--bg-card);
     padding: 120px 48px;
     margin-top: 0;

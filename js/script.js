@@ -1,4 +1,52 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- 0. INJECTION DE STYLES POUR LA GESTION DES PLANS (Z-INDEX) ---
+    // On s'assure que le contenu textuel et interactif passe DEVANT les cubes
+    // ET que les cubes restent dans la section
+    const styleSheet = document.createElement("style");
+    styleSheet.innerText = `
+        /* La section portfolio doit servir de référence de positionnement */
+        #portfolio {
+            position: relative;
+            overflow: hidden; /* Coupe les cubes qui sortent en bas */
+            z-index: 1; /* Crée un contexte d'empilement */
+        }
+
+        /* Les cubes seront en arrière-plan absolu */
+        .camo-cube {
+            position: absolute !important;
+            z-index: 0 !important; /* Derrière tout */
+        }
+        
+        /* Tout le contenu important passe au-dessus (z-index: 2 min) */
+        /* NOTE : J'ai retiré 'nav' de cette liste pour ne pas écraser son position: fixed */
+        .section-title, 
+        .hero-content, 
+        .instruction-wrapper,
+        .project-counter-badge,
+        .carousel-scene,
+        .carousel-controls,
+        .timeline-container,
+        .contact-grid,
+        .socials,
+        .copyright,
+        .scroll-indicator {
+            position: relative;
+            z-index: 10;
+        }
+
+        /* La barre de navigation doit rester FIXE et au-dessus de tout */
+        nav { 
+            position: fixed !important; 
+            top: 0; 
+            width: 100%; 
+            z-index: 1000; 
+        }
+
+        .modal { z-index: 2000; }
+        .mobile-warning-popup { z-index: 4000; }
+    `;
+    document.head.appendChild(styleSheet);
+
     // --- SÉLECTION DES ÉLÉMENTS DOM ---
     const container = document.getElementById('projects-container');
     const modal = document.getElementById('map-modal');
@@ -85,10 +133,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const BOOST_FORCE = 0.08;   
     const FRICTION = 0.95;      
 
+    // Fonction de mise à jour des instructions (Mobile vs Desktop)
+    function updateInstructionsText() {
+        if (!instructionTextElement) return;
+
+        if (window.innerWidth < 768) {
+            // Version Mobile : Glisser au lieu de survoler
+            instructionTextElement.innerText = "Glissez ↔ pour accélérer • Tapez pour ouvrir";
+        } else {
+            // Version Desktop : Survoler
+            instructionTextElement.innerText = "Survolez pour Zoomer • Cliquez pour Explorer";
+        }
+    }
+
     // Fonction de redimensionnement responsive du carrousel
     function updateRadii() {
         const count = (typeof myProjects !== 'undefined' && Array.isArray(myProjects)) ? myProjects.length : 4;
         
+        // Mise à jour des instructions texte
+        updateInstructionsText();
+
         if (window.innerWidth < 768) {
             // --- MOBILE : CARTES PLUS PETITES ---
             const minRadiusX = 130; 
@@ -149,10 +213,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
 
-            // Gestion des événements souris
+            // Gestion des événements souris (DESKTOP UNIQUEMENT POUR LE TEXTE)
             cardContainer.addEventListener('mouseenter', () => {
                 hoveredCard = cardContainer;
-                if (instructionTextElement) {
+                // On ne change le texte que sur Desktop
+                if (instructionTextElement && window.innerWidth >= 768) {
                     instructionTextElement.innerText = "CLIQUEZ POUR EXPLORER";
                 }
             });
@@ -161,7 +226,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (hoveredCard === cardContainer) {
                     hoveredCard = null;
                 }
-                if (instructionTextElement) {
+                // On ne change le texte que sur Desktop
+                if (instructionTextElement && window.innerWidth >= 768) {
                     instructionTextElement.innerText = "Survolez pour Zoomer • Cliquez pour Explorer";
                 }
             });
@@ -231,7 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error("Erreur: La variable 'myProjects' n'est pas définie.");
     }
 
-    // --- ACCÉLÉRATEURS (Boutons fléchés) ---
+    // --- ACCÉLÉRATEURS (Boutons fléchés Desktop) ---
     if(prevBtn && nextBtn) {
         prevBtn.addEventListener('mousedown', () => {
             speedDirection = -1; currentSpeed = -BOOST_FORCE; 
@@ -245,6 +311,36 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'ArrowLeft') { speedDirection = -1; currentSpeed = -BOOST_FORCE; } 
         else if (e.key === 'ArrowRight') { speedDirection = 1; currentSpeed = BOOST_FORCE; }
     });
+
+    // --- GESTION TACTILE (SWIPE) POUR ACCÉLÉRER (MOBILE) ---
+    const carouselScene = document.querySelector('.carousel-scene');
+    let touchStartX = 0;
+    
+    if (carouselScene) {
+        carouselScene.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+        }, {passive: true});
+
+        carouselScene.addEventListener('touchmove', (e) => {
+            const touchCurrentX = e.touches[0].clientX;
+            // Différence entre la position de départ (ou précédente) et actuelle
+            const deltaX = touchStartX - touchCurrentX;
+            
+            // Sensibilité : détermine à quel point le swipe affecte la vitesse
+            const sensitivity = 0.0005; 
+            
+            // On ajoute la différence à la vitesse actuelle pour créer une accélération
+            // Si deltaX > 0 (swipe vers gauche), on ajoute de la vitesse positive
+            currentSpeed += deltaX * sensitivity;
+            
+            // Mise à jour de touchStartX pour le prochain événement touchmove
+            // Cela permet de calculer la vitesse instantanée du doigt
+            touchStartX = touchCurrentX;
+        }, {passive: true});
+        
+        // Note: Pas besoin de touchend spécifique, l'inertie (FRICTION dans animateCarousel) 
+        // ralentira naturellement le carrousel après le swipe.
+    }
     
     // ---------------------------------------------------------
     // SYSTEME DE PARTICULES (CUBES CAMOUFLAGE) - VERSION 3D RÉELLE
@@ -257,14 +353,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if(portfolio.dataset.cubesLaunched === "true") return;
         portfolio.dataset.cubesLaunched = "true";
 
-        // MODIFICATION : Plus de cubes au début avec des délais échelonnés
+
+        // On passe 'portfolio' en paramètre pour qu'ils soient ajoutés DANS la section
         setTimeout(() => createFallingCube(portfolio), 0);
         setTimeout(() => createFallingCube(portfolio), 400);
         setTimeout(() => createFallingCube(portfolio), 800);
         setTimeout(() => createFallingCube(portfolio), 1200);
         setTimeout(() => createFallingCube(portfolio), 1600);
         
-        // MODIFICATION : Créer un nouveau cube toutes les secondes (plus fréquent)
         setInterval(() => {
             if(document.visibilityState === 'visible') {
                 createFallingCube(portfolio);
@@ -272,9 +368,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000);
     }
 
-    function createFallingCube(container) {
+    function createFallingCube(containerElement) {
+        // Sécurité si container n'est pas passé
+        const targetContainer = containerElement || document.getElementById('portfolio');
+        if (!targetContainer) return;
+
         const cube = document.createElement('div');
         cube.classList.add('camo-cube');
+        
+        // Et Z-Index 0 pour être derrière le carrousel (qui est z-index 10)
+        cube.style.position = 'absolute';
+        cube.style.top = '-50px'; // Commence juste au dessus
+        cube.style.zIndex = '0';
         
         // Faces du cube
         for(let j=0; j<6; j++) {
@@ -283,20 +388,24 @@ document.addEventListener('DOMContentLoaded', () => {
             cube.appendChild(face);
         }
         
-        // Position aléatoire SUR LES COTÉS
-        const side = Math.random() > 0.5 ? 'left' : 'right';
-        const randomPos = Math.random() * 15;
-        
-        if (side === 'left') {
-            cube.style.left = randomPos + '%';
+        // Les cubes ne tombent que de 0-25% (gauche) et 75-100% (droite)
+        let randomPos;
+        if (Math.random() < 0.5) {
+            // Côté Gauche : 0% à 25%
+            randomPos = Math.random() * 25;
         } else {
-            cube.style.left = (85 + randomPos) + '%';
+            // Côté Droit : 75% à 100%
+            randomPos = 75 + (Math.random() * 25);
         }
+        cube.style.left = randomPos + '%';
         
         // Paramètres d'animation
-        const startY = -100;
-        const endY = window.innerHeight + 100;
-        const duration = 6000 + Math.random() * 4000; // 6-10 secondes
+        // La chute se fait sur la hauteur du conteneur parent
+        const containerHeight = targetContainer.offsetHeight;
+        const startY = -50;
+        const endY = containerHeight + 50;
+        
+        const duration = 12000 + Math.random() * 8000; 
         const startTime = Date.now();
         
         // Rotation aléatoire initiale
@@ -304,19 +413,21 @@ document.addEventListener('DOMContentLoaded', () => {
         let rotY = Math.random() * 360;
         let rotZ = Math.random() * 360;
         
-        // Vitesse de rotation aléatoire
-        const speedX = 0.5 + Math.random() * 1.5;
-        const speedY = 0.5 + Math.random() * 1.5;
-        const speedZ = 0.5 + Math.random() * 1.5;
+        // Vitesse de rotation aléatoire (légèrement ralentie aussi pour coller à l'ambiance)
+        const speedX = 0.3 + Math.random() * 0.7;
+        const speedY = 0.3 + Math.random() * 0.7;
+        const speedZ = 0.3 + Math.random() * 0.7;
         
-        container.appendChild(cube);
+        // AJOUT AU CONTENEUR PORTFOLIO (et pas body)
+        targetContainer.appendChild(cube);
         
         // Animation manuelle avec requestAnimationFrame
         function animate() {
             const elapsed = Date.now() - startTime;
             const progress = elapsed / duration;
             
-            if (progress >= 1) {
+            // Si le cube a dépassé la durée ou n'est plus dans le DOM
+            if (progress >= 1 || !cube.isConnected) {
                 cube.remove();
                 return;
             }
@@ -338,7 +449,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             // Application du transform complet
-            cube.style.transform = `translateY(${currentY}px) rotateX(${rotX}deg) rotateY(${rotY}deg) rotateZ(${rotZ}deg)`;
+            // Utilisation de perspective() pour garder l'effet 3D
+            cube.style.transform = `perspective(1000px) translateY(${currentY}px) rotateX(${rotX}deg) rotateY(${rotY}deg) rotateZ(${rotZ}deg)`;
             cube.style.opacity = opacity;
             
             requestAnimationFrame(animate);
@@ -376,7 +488,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- GESTION DE LA POPUP MOBILE ---
     // Fonction pour fermer la popup
     if (closeWarningBtn) {
-        closeWarningBtn.addEventListener('click', () => {
+        closeWarningBtn.addEventListener('click', (e) => {
+            // IMPORTANT : Empêcher le rechargement de la page et la propagation
+            e.preventDefault();
+            e.stopPropagation();
+            
             if (mobileWarningPopup) mobileWarningPopup.style.display = 'none';
         });
     }

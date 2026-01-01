@@ -7,26 +7,50 @@
 }
 
 :root {
-    --primary: #fafafa;
+
+    --bg-hero: linear-gradient(135deg, #fafafa 0%, #ffffff 100%);
+    
+    /* Section 2 : Portfolio (Carrousel de projets) */
+    --bg-portfolio: #f1f1f1; 
+    
+    /* Section 3 : Expérience (Timeline) */
+    --bg-experience: #ffffff;
+    
+    /* Section 4 : Footer (Contact) */
+    --bg-contact: #0a0a0a;
+
+    /* COULEURS PRINCIPALES */
+    --primary: #fafafa; 
+    --primary-gradient: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    
     --bg-card: #ffffff;
     --text: #0a0a0a;
     --text-dim: #6b6b6b;
     --text-light: #9b9b9b;
     --detail-bg: #f5f5f5; 
+    
+    /* ACCENTS - Couleurs modernes tech */
     --accent: #0a0a0a;
-    --accent-blue: #000000;
+    --accent-blue: #0ea5e9; 
     --accent-purple: #7c3aed;
     --accent-orange: #ea580c;
-    --accent-green: #16a34a;
+    --accent-green: #10b981; 
+    --accent-tech: #06b6d4; 
+    
+    /* BORDURES ET OMBRES */
     --border: rgba(10, 10, 10, 0.08);
     --border-hover: rgba(10, 10, 10, 0.15);
     --shadow-sm: 0 2px 8px rgba(10, 10, 10, 0.03);
     --shadow-md: 0 8px 24px rgba(10, 10, 10, 0.06);
     --shadow-lg: 0 20px 40px rgba(10, 10, 10, 0.08);
+    
+    /* EFFETS GLASSMORPHISM */
+    --glass-bg: rgba(255, 255, 255, 0.7); 
+    --glass-border: rgba(255, 255, 255, 0.18); 
 }
 
 body {
-    background: var(--primary);
+    background: var(--primary-gradient); 
     color: var(--text);
     font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
     overflow-x: hidden;

@@ -40,7 +40,6 @@
         font-size: 10px;
     }
     
-    /* MODIFICATION : Titre PLUS GRAND sur mobile */
     h1 {
         font-size: 48px; /* Augmenté de 36px à 48px */
         margin-bottom: 12px;
@@ -75,8 +74,10 @@
     .instruction-badge {
         padding: 8px 16px;
     }
+    /* Texte plus petit pour les instructions mobile */
     .instruction-text {
         font-size: 10px;
+        white-space: nowrap; /* Empêche le retour à la ligne */
     }
 
     /* 4. Carrousel 3D : REDUCTION TAILLE CARTES POUR MOBILE */
@@ -89,6 +90,11 @@
         height: 280px;
         margin-left: -90px;
         margin-top: -140px;
+    }
+    
+    /* CACHER LES BOUTONS SUR MOBILE */
+    .carousel-controls {
+        display: none !important;
     }
     
     /* Ajustement interne de la carte */
@@ -176,7 +182,6 @@
         background: var(--bg-card); /* Fond opaque pour cacher la carte qui glisse dessous */
     }
 
-    /* MODIFICATION : Style spécifique pour l'instruction mobile dans la modale */
     .modal-instruction {
         font-size: 11px;
         color: var(--accent); /* Couleur accent pour attirer l'oeil */

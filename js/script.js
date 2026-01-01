@@ -78,6 +78,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Variable pour stocker l'URL en attente (Lazy Loading)
     let pendingMapUrl = null;
+    
+    // Variable pour gérer l'intervalle des cubes
+    let cubeInterval = null;
 
     // --- PATCH DE SÉCURITÉ : Empêcher le rechargement sur les boutons map ---
     const mapButtons = document.querySelectorAll('.map-controls button');
@@ -395,7 +398,8 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => createFallingCube(portfolio), 1200);
         setTimeout(() => createFallingCube(portfolio), 1600);
         
-        setInterval(() => {
+        // On stocke l'ID de l'intervalle pour pouvoir l'arrêter
+        cubeInterval = setInterval(() => {
             if(document.visibilityState === 'visible') {
                 createFallingCube(portfolio);
             }
@@ -465,8 +469,47 @@ document.addEventListener('DOMContentLoaded', () => {
     // ---------------------------------------------------------
     // FONCTIONS MODALE & NAVIGATION
     // ---------------------------------------------------------
+    
+    // FONCTIONS D'OPTIMISATION MÉMOIRE (ANTI-CRASH)
+    function pauseBackgroundAnimations() {
+        // 1. Cacher le conteneur Three.js pour arrêter le rendu GPU
+        const canvasContainer = document.getElementById('canvas-container');
+        if (canvasContainer) canvasContainer.style.display = 'none';
+
+        // 2. Arrêter la création de nouveaux cubes
+        if (cubeInterval) {
+            clearInterval(cubeInterval);
+            cubeInterval = null;
+        }
+        
+        // 3. Optionnel : Nettoyer les cubes existants
+        const existingCubes = document.querySelectorAll('.camo-cube');
+        existingCubes.forEach(c => c.remove());
+    }
+
+    function resumeBackgroundAnimations() {
+        // 1. Réafficher le conteneur Three.js
+        const canvasContainer = document.getElementById('canvas-container');
+        if (canvasContainer) canvasContainer.style.display = 'block';
+
+        // 2. Relancer les cubes
+        const portfolio = document.getElementById('portfolio');
+        if (portfolio && !cubeInterval) {
+             cubeInterval = setInterval(() => {
+                if(document.visibilityState === 'visible') {
+                    createFallingCube(portfolio);
+                }
+            }, 1000);
+        }
+    }
+
     function clearModalContent() {
-        if (modalFrame) { modalFrame.src = ""; modalFrame.style.display = 'none'; }
+        if (modalFrame) { 
+            // NETTOYAGE AGRESSIF DE L'IFRAME POUR LIBÉRER LA MÉMOIRE
+            modalFrame.src = "about:blank"; 
+            modalFrame.style.display = 'none'; 
+        }
+        
         const existingVideo = document.getElementById('dynamic-video');
         if (existingVideo) { existingVideo.pause(); existingVideo.remove(); }
         const existingImg = document.getElementById('dynamic-image');
@@ -490,6 +533,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // 2. DÉCLENCHER LE CHARGEMENT DIFFÉRÉ MAINTENANT
             if (pendingMapUrl) {
+                // IMPORTANT : On met en pause les animations d'arrière-plan AVANT de charger le lourd
+                pauseBackgroundAnimations();
+                
                 // On appelle changeMap avec le flag "force" à true
                 window.changeMap(pendingMapUrl, true);
                 pendingMapUrl = null; // Reset
@@ -503,6 +549,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function backToDetails() {
         const existingVideo = document.getElementById('dynamic-video');
         if (existingVideo) existingVideo.pause();
+        
+        // Si on quitte la vue média, on peut relancer les animations
+        resumeBackgroundAnimations();
+        
         modalMediaView.style.display = 'none';
         modalDetailsView.style.display = 'block';
         btnBackFloating.style.display = 'none';
@@ -510,11 +560,17 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Reset pending url si on revient en arrière sans avoir accepté
         pendingMapUrl = null;
+        
+        // Nettoyage iframe
+        if (modalFrame) modalFrame.src = "about:blank";
     }
     if (btnBackFloating) btnBackFloating.addEventListener('click', backToDetails);
 
     function openDetailsModal(project, index) {
         clearModalContent();
+        // On s'assure que les animations tournent quand on est juste sur le texte
+        resumeBackgroundAnimations();
+        
         if (modalLoader) modalLoader.style.display = 'none';
         modal.style.display = 'flex';
         setTimeout(() => modal.classList.add('show'), 10);
@@ -594,6 +650,10 @@ document.addEventListener('DOMContentLoaded', () => {
             
         } else {
             // CHARGEMENT STANDARD (Desktop ou Video/Image)
+            
+            // OPTIMISATION : Si c'est Desktop mais que c'est une carte lourde, on peut aussi pauser
+            // Mais pour l'instant on garde le comportement desktop fluide
+            
             if (modalLoader) modalLoader.style.display = 'flex';
 
             const targetTitle = document.getElementById('modal-media-title');
@@ -662,6 +722,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function closeModalFunc() {
         modal.classList.remove('show');
+        
+        // RÉTABLIR LES ANIMATIONS QUAND ON FERME TOUT
+        resumeBackgroundAnimations();
+        
         setTimeout(() => { modal.style.display = 'none'; clearModalContent(); }, 300);
     }
 
@@ -688,6 +752,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (mobileWarningPopup) mobileWarningPopup.style.display = 'flex';
             if (modalLoader) modalLoader.style.display = 'none'; // Pas de loader
             return; // ON ARRÊTE TOUT ICI
+        }
+        
+        // SI ON CHARGE EFFECTIVEMENT UNE CARTE LOURDE : PAUSE DES ANIMATIONS
+        if (isMobile) {
+            pauseBackgroundAnimations();
         }
 
         // Si on arrive ici, c'est soit Desktop, soit un chargement forcé (autorisé)

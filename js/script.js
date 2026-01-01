@@ -578,7 +578,6 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="modal-details-body">
                 <div class="modal-details-desc">
                     <p>${project.description}</p>
-                    <p>Ce projet illustre une approche complète, de l'analyse des besoins à la mise en œuvre technique.</p>
                 </div>
                 <div class="modal-details-highlights" style="background: ${accentColor}08;">
                     <h4 style="color: ${accentColor}; opacity: 0.8;">Points Techniques Clés</h4>

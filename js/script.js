@@ -1,7 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- 0. INJECTION DE STYLES POUR LA GESTION DES PLANS (Z-INDEX) ---
-    // On s'assure que le contenu textuel et interactif passe DEVANT les cubes
-    // ET que les cubes restent dans la section
     const styleSheet = document.createElement("style");
     styleSheet.innerText = `
         /* La section portfolio doit servir de référence de positionnement */
@@ -18,7 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         /* Tout le contenu important passe au-dessus (z-index: 2 min) */
-        /* NOTE : J'ai retiré 'nav' de cette liste pour ne pas écraser son position: fixed */
         .section-title, 
         .hero-content, 
         .instruction-wrapper,
@@ -28,9 +25,13 @@ document.addEventListener('DOMContentLoaded', () => {
         .timeline-container,
         .contact-grid,
         .socials,
-        .copyright,
-        .scroll-indicator {
+        .copyright {
             position: relative;
+            z-index: 10;
+        }
+
+        /* NOTE : J'ai retiré .scroll-indicator de la liste ci-dessus pour ne pas casser son position: absolute */
+        .scroll-indicator {
             z-index: 10;
         }
 
@@ -65,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const mobileWarningPopup = document.getElementById('mobile-warning-popup');
     const closeWarningBtn = document.getElementById('close-warning-btn');
     
-    // Nouveau bouton retour (dans le groupe de contrôles)
+    // Nouveau bouton retour
     const btnBackFloating = document.getElementById('btn-back-floating');
 
     // Le badge d'instruction principal
@@ -104,14 +105,12 @@ document.addEventListener('DOMContentLoaded', () => {
         scrollObserver.observe(el);
     });
     
-    // On observe aussi la section portfolio pour lancer les cubes
     const portfolioSection = document.getElementById('portfolio');
     if(portfolioSection) {
         scrollObserver.observe(portfolioSection);
     }
 
     // --- COULEURS DES PROJETS ---
-    // Bleu, Rouge, Marron, Vert
     const projectColors = ['#334155', '#9F1239', '#92400E', '#065F46'];
 
     // ---------------------------------------------------------
@@ -133,36 +132,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const BOOST_FORCE = 0.08;   
     const FRICTION = 0.95;      
 
-    // Fonction de mise à jour des instructions (Mobile vs Desktop)
+    // --- VARIABLES GESTION TACTILE ---
+    let isDragging = false;
+    let startTouchX = 0;
+    let lastTouchX = 0;
+    let lastTouchTime = 0;
+    let touchVelocity = 0;
+    let hasMoved = false; // Pour différencier un clic d'un drag
+
+    // Fonction de mise à jour des instructions
     function updateInstructionsText() {
         if (!instructionTextElement) return;
 
         if (window.innerWidth < 768) {
-            // Version Mobile : Glisser au lieu de survoler
-            instructionTextElement.innerText = "Glissez ↔ pour accélérer • Tapez pour ouvrir";
+            // NOUVEAU TEXTE PLUS COHÉRENT
+            instructionTextElement.innerText = "Touchez et glissez pour tourner • Tapez pour ouvrir";
         } else {
-            // Version Desktop : Survoler
             instructionTextElement.innerText = "Survolez pour Zoomer • Cliquez pour Explorer";
         }
     }
 
-    // Fonction de redimensionnement responsive du carrousel
     function updateRadii() {
         const count = (typeof myProjects !== 'undefined' && Array.isArray(myProjects)) ? myProjects.length : 4;
-        
-        // Mise à jour des instructions texte
         updateInstructionsText();
 
         if (window.innerWidth < 768) {
-            // --- MOBILE : CARTES PLUS PETITES ---
             const minRadiusX = 130; 
             const spacingPerCard = 160; 
             const calculatedRadius = (count * spacingPerCard) / (2 * Math.PI);
             radiusX = Math.max(minRadiusX, calculatedRadius);
-            
             radiusZ = radiusX * 0.7; 
         } else {
-            // --- DESKTOP ---
             const minRadiusX = 350; 
             const spacingPerCard = 400; 
             const calculatedRadius = (count * spacingPerCard) / (2 * Math.PI);
@@ -213,27 +213,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
 
-            // Gestion des événements souris (DESKTOP UNIQUEMENT POUR LE TEXTE)
+            // Events Desktop
             cardContainer.addEventListener('mouseenter', () => {
                 hoveredCard = cardContainer;
-                // On ne change le texte que sur Desktop
                 if (instructionTextElement && window.innerWidth >= 768) {
                     instructionTextElement.innerText = "CLIQUEZ POUR EXPLORER";
                 }
             });
 
             cardContainer.addEventListener('mouseleave', () => {
-                if (hoveredCard === cardContainer) {
-                    hoveredCard = null;
-                }
-                // On ne change le texte que sur Desktop
+                if (hoveredCard === cardContainer) hoveredCard = null;
                 if (instructionTextElement && window.innerWidth >= 768) {
                     instructionTextElement.innerText = "Survolez pour Zoomer • Cliquez pour Explorer";
                 }
             });
 
-            // Clic sur une carte => Ouvre les détails
-            cardContainer.addEventListener('click', () => {
+            // GESTION DU CLIC INTELLIGENTE
+            // N'ouvre PAS le projet si on vient de faire glisser le carrousel (drag)
+            cardContainer.addEventListener('click', (e) => {
+                if (hasMoved && window.innerWidth < 768) {
+                    // C'était un mouvement de doigt, on annule le clic
+                    return;
+                }
                 openDetailsModal(project, index);
             });
 
@@ -241,15 +242,22 @@ document.addEventListener('DOMContentLoaded', () => {
             cardElements.push(cardContainer);
         });
 
-        // Boucle d'animation principale
+        // --- BOUCLE D'ANIMATION ---
         function animateCarousel() {
-            if (Math.abs(currentSpeed) > BASE_SPEED) {
-                currentSpeed *= FRICTION;
-            } else {
-                currentSpeed = BASE_SPEED * speedDirection;
+            // Si l'utilisateur est en train de toucher l'écran, on ne met PAS à jour la vitesse
+            // car l'angle est contrôlé directement par 'touchmove'.
+            if (!isDragging) {
+                if (Math.abs(currentSpeed) > BASE_SPEED) {
+                    currentSpeed *= FRICTION; // Ralentissement naturel
+                } else {
+                    currentSpeed = BASE_SPEED * speedDirection; // Vitesse de croisière
+                }
+                
+                // Rotation automatique standard
+                currentAngle -= currentSpeed;
             }
-            currentAngle -= currentSpeed;
 
+            // Mise à jour visuelle des cartes
             cardElements.forEach(card => {
                 const baseAngle = parseFloat(card.dataset.baseAngle);
                 const theta = currentAngle + baseAngle;
@@ -294,67 +302,113 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         animateCarousel();
     } else {
-        console.error("Erreur: La variable 'myProjects' n'est pas définie.");
+        console.error("Erreur: 'myProjects' manquant.");
     }
 
-    // --- ACCÉLÉRATEURS (Boutons fléchés Desktop) ---
+    // --- ACCÉLÉRATEURS CLAVIER/SOURIS (Desktop) ---
     if(prevBtn && nextBtn) {
-        prevBtn.addEventListener('mousedown', () => {
-            speedDirection = -1; currentSpeed = -BOOST_FORCE; 
-        });
-        nextBtn.addEventListener('mousedown', () => {
-            speedDirection = 1; currentSpeed = BOOST_FORCE; 
-        });
+        prevBtn.addEventListener('mousedown', () => { speedDirection = -1; currentSpeed = -BOOST_FORCE; });
+        nextBtn.addEventListener('mousedown', () => { speedDirection = 1; currentSpeed = BOOST_FORCE; });
     }
-
     document.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowLeft') { speedDirection = -1; currentSpeed = -BOOST_FORCE; } 
         else if (e.key === 'ArrowRight') { speedDirection = 1; currentSpeed = BOOST_FORCE; }
     });
 
-    // --- GESTION TACTILE (SWIPE) POUR ACCÉLÉRER (MOBILE) ---
+    // --- GESTION TACTILE AVANCÉE (MOBILE - TOTAL CONTROL) ---
     const carouselScene = document.querySelector('.carousel-scene');
-    let touchStartX = 0;
     
     if (carouselScene) {
+        // 1. TOUCH START : On attrape le carrousel
         carouselScene.addEventListener('touchstart', (e) => {
-            touchStartX = e.touches[0].clientX;
+            isDragging = true;
+            hasMoved = false; // Reset du flag de mouvement
+            startTouchX = e.touches[0].clientX;
+            lastTouchX = startTouchX;
+            lastTouchTime = Date.now();
+            
+            // On stoppe la vitesse auto pour avoir un contrôle immédiat
+            currentSpeed = 0;
+            
         }, {passive: true});
 
+        // 2. TOUCH MOVE : On déplace le carrousel (1:1)
         carouselScene.addEventListener('touchmove', (e) => {
-            const touchCurrentX = e.touches[0].clientX;
-            // Différence entre la position de départ (ou précédente) et actuelle
-            const deltaX = touchStartX - touchCurrentX;
+            if (!isDragging) return;
             
-            // Sensibilité : détermine à quel point le swipe affecte la vitesse
-            const sensitivity = 0.0005; 
+            const currentX = e.touches[0].clientX;
+            const now = Date.now();
+            const deltaX = currentX - lastTouchX; // Différence depuis la dernière frame
+            const deltaTime = now - lastTouchTime;
             
-            // On ajoute la différence à la vitesse actuelle pour créer une accélération
-            // Si deltaX > 0 (swipe vers gauche), on ajoute de la vitesse positive
-            currentSpeed += deltaX * sensitivity;
+            // Détection du seuil de mouvement pour annuler le clic
+            if (Math.abs(currentX - startTouchX) > 10) {
+                hasMoved = true;
+            }
+
+            // Sensibilité : Ajuste la vitesse de rotation par rapport aux pixels glissés
+            // 0.008 donne un bon feeling "1 pour 1" sur mobile
+            const sensitivity = 0.008; 
             
-            // Mise à jour de touchStartX pour le prochain événement touchmove
-            // Cela permet de calculer la vitesse instantanée du doigt
-            touchStartX = touchCurrentX;
+            // Application directe à l'angle (Contrôle temps réel)
+            // Note: deltaX > 0 (glisser vers la droite) -> angle augmente -> carrousel tourne vers droite
+            currentAngle += deltaX * sensitivity; 
+            
+            // Calcul de la vélocité instantanée pour le "lancer" final
+            if (deltaTime > 0) {
+                // Facteur 16 pour convertir en vitesse par frame (60fps) approx
+                touchVelocity = (deltaX * sensitivity) / deltaTime * 16; 
+            }
+            
+            lastTouchX = currentX;
+            lastTouchTime = now;
+            
         }, {passive: true});
-        
-        // Note: Pas besoin de touchend spécifique, l'inertie (FRICTION dans animateCarousel) 
-        // ralentira naturellement le carrousel après le swipe.
+
+        // 3. TOUCH END : On relâche avec inertie
+        carouselScene.addEventListener('touchend', () => {
+            isDragging = false;
+            
+            // Plafond pour éviter un lancer supersonique
+            const maxVelocity = 0.2; 
+            if (touchVelocity > maxVelocity) touchVelocity = maxVelocity;
+            if (touchVelocity < -maxVelocity) touchVelocity = -maxVelocity;
+            
+            // --- TRANSFERT DE L'INERTIE ---
+            // La boucle animateCarousel fait : currentAngle -= currentSpeed
+            // Si on glissait vers la GAUCHE (deltaX < 0), l'angle diminuait.
+            // On veut qu'il continue de diminuer.
+            // Donc 'currentSpeed' doit être POSITIF (car on soustrait une vitesse positive).
+            // 'touchVelocity' est négative. Donc : currentSpeed = -touchVelocity.
+            
+            currentSpeed = -touchVelocity;
+            
+            // Mise à jour de la direction par défaut pour la suite
+            // Si on a lancé vers la gauche, il continuera vers la gauche même après avoir ralenti
+            if (currentSpeed > 0) speedDirection = 1; 
+            else if (currentSpeed < 0) speedDirection = -1;
+            
+            // Si l'utilisateur s'est arrêté net avant de lâcher, on reprend la vitesse de base
+            if (Math.abs(touchVelocity) < 0.002) {
+                currentSpeed = BASE_SPEED * speedDirection;
+            }
+            
+            // Reset velocity
+            touchVelocity = 0;
+            
+        });
     }
-    
+
     // ---------------------------------------------------------
-    // SYSTEME DE PARTICULES (CUBES CAMOUFLAGE) - VERSION 3D RÉELLE
+    // SYSTEME DE PARTICULES (CUBES CAMOUFLAGE)
     // ---------------------------------------------------------
     function startFallingCubes() {
         const portfolio = document.getElementById('portfolio');
         if(!portfolio) return;
         
-        // Empêcher de lancer plusieurs fois
         if(portfolio.dataset.cubesLaunched === "true") return;
         portfolio.dataset.cubesLaunched = "true";
 
-
-        // On passe 'portfolio' en paramètre pour qu'ils soient ajoutés DANS la section
         setTimeout(() => createFallingCube(portfolio), 0);
         setTimeout(() => createFallingCube(portfolio), 400);
         setTimeout(() => createFallingCube(portfolio), 800);
@@ -368,180 +422,112 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000);
     }
 
-    function createFallingCube(containerElement) {
-        // Sécurité si container n'est pas passé
-        const targetContainer = containerElement || document.getElementById('portfolio');
+    function createFallingCube(targetContainer) {
         if (!targetContainer) return;
 
         const cube = document.createElement('div');
         cube.classList.add('camo-cube');
-        
-        // Et Z-Index 0 pour être derrière le carrousel (qui est z-index 10)
         cube.style.position = 'absolute';
-        cube.style.top = '-50px'; // Commence juste au dessus
+        cube.style.top = '-50px'; 
         cube.style.zIndex = '0';
         
-        // Faces du cube
         for(let j=0; j<6; j++) {
             const face = document.createElement('div');
             face.classList.add('camo-cube-face');
             cube.appendChild(face);
         }
         
-        // Les cubes ne tombent que de 0-25% (gauche) et 75-100% (droite)
         let randomPos;
-        if (Math.random() < 0.5) {
-            // Côté Gauche : 0% à 25%
-            randomPos = Math.random() * 25;
-        } else {
-            // Côté Droit : 75% à 100%
-            randomPos = 75 + (Math.random() * 25);
-        }
+        if (Math.random() < 0.5) randomPos = Math.random() * 25;
+        else randomPos = 75 + (Math.random() * 25);
         cube.style.left = randomPos + '%';
         
-        // Paramètres d'animation
-        // La chute se fait sur la hauteur du conteneur parent
         const containerHeight = targetContainer.offsetHeight;
         const startY = -50;
         const endY = containerHeight + 50;
-        
         const duration = 12000 + Math.random() * 8000; 
         const startTime = Date.now();
         
-        // Rotation aléatoire initiale
         let rotX = Math.random() * 360;
         let rotY = Math.random() * 360;
         let rotZ = Math.random() * 360;
         
-        // Vitesse de rotation aléatoire (légèrement ralentie aussi pour coller à l'ambiance)
         const speedX = 0.3 + Math.random() * 0.7;
         const speedY = 0.3 + Math.random() * 0.7;
         const speedZ = 0.3 + Math.random() * 0.7;
         
-        // AJOUT AU CONTENEUR PORTFOLIO (et pas body)
         targetContainer.appendChild(cube);
         
-        // Animation manuelle avec requestAnimationFrame
         function animate() {
             const elapsed = Date.now() - startTime;
             const progress = elapsed / duration;
             
-            // Si le cube a dépassé la durée ou n'est plus dans le DOM
             if (progress >= 1 || !cube.isConnected) {
                 cube.remove();
                 return;
             }
             
-            // Position Y (chute)
             const currentY = startY + (endY - startY) * progress;
+            rotX += speedX; rotY += speedY; rotZ += speedZ;
             
-            // Rotation continue
-            rotX += speedX;
-            rotY += speedY;
-            rotZ += speedZ;
-            
-            // Opacité (fade in/out)
             let opacity = 1;
-            if (progress < 0.1) {
-                opacity = progress / 0.1;
-            } else if (progress > 0.9) {
-                opacity = (1 - progress) / 0.1;
-            }
+            if (progress < 0.1) opacity = progress / 0.1;
+            else if (progress > 0.9) opacity = (1 - progress) / 0.1;
             
-            // Application du transform complet
-            // Utilisation de perspective() pour garder l'effet 3D
             cube.style.transform = `perspective(1000px) translateY(${currentY}px) rotateX(${rotX}deg) rotateY(${rotY}deg) rotateZ(${rotZ}deg)`;
             cube.style.opacity = opacity;
             
             requestAnimationFrame(animate);
         }
-        
         animate();
     }
 
     // ---------------------------------------------------------
     // FONCTIONS MODALE & NAVIGATION
     // ---------------------------------------------------------
-
     function clearModalContent() {
-        // Reset Media View
         if (modalFrame) { modalFrame.src = ""; modalFrame.style.display = 'none'; }
         const existingVideo = document.getElementById('dynamic-video');
         if (existingVideo) { existingVideo.pause(); existingVideo.remove(); }
         const existingImg = document.getElementById('dynamic-image');
         if (existingImg) existingImg.remove();
         
-        // Reset Details View
         if(modalDetailsView) modalDetailsView.innerHTML = '';
-        
-        // Reset Visibilité
         if(modalMediaView) modalMediaView.style.display = 'none';
         if(modalDetailsView) modalDetailsView.style.display = 'none';
-        
-        // Cacher bouton retour
         if(btnBackFloating) btnBackFloating.style.display = 'none';
-        
-        // Cacher Pop-up warning si ouverte
         if(mobileWarningPopup) mobileWarningPopup.style.display = 'none';
     }
 
-    // --- GESTION DE LA POPUP MOBILE ---
-    // Fonction pour fermer la popup
     if (closeWarningBtn) {
         closeWarningBtn.addEventListener('click', (e) => {
-            // IMPORTANT : Empêcher le rechargement de la page et la propagation
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // ENREGISTRER DANS LE SESSION STORAGE
-            // Cela empêche la popup de revenir tant que l'onglet n'est pas fermé
+            e.preventDefault(); e.stopPropagation();
             sessionStorage.setItem('mobileWarningDismissed', 'true');
-
             if (mobileWarningPopup) mobileWarningPopup.style.display = 'none';
         });
     }
 
-    // --- FONCTION : RETOUR ARRIÈRE (Média vers Détails) ---
     function backToDetails() {
-        // Pause vidéo si elle existe
         const existingVideo = document.getElementById('dynamic-video');
         if (existingVideo) existingVideo.pause();
-        
-        // Bascule de vue
         modalMediaView.style.display = 'none';
         modalDetailsView.style.display = 'block';
-        
-        // Cacher le bouton retour car on est revenu au début
         btnBackFloating.style.display = 'none';
-        
-        // Cacher Pop-up warning si ouverte
         if(mobileWarningPopup) mobileWarningPopup.style.display = 'none';
     }
+    if (btnBackFloating) btnBackFloating.addEventListener('click', backToDetails);
 
-    if (btnBackFloating) {
-        btnBackFloating.addEventListener('click', backToDetails);
-    }
-
-    // --- FONCTION 1 : Ouvrir la vue DÉTAILS ---
     function openDetailsModal(project, index) {
         clearModalContent();
-        
-        // Le loader n'est pas nécessaire pour le texte
         if (modalLoader) modalLoader.style.display = 'none';
-
         modal.style.display = 'flex';
         setTimeout(() => modal.classList.add('show'), 10);
 
-        // Récupération de la couleur du projet
         const accentColor = projectColors[index % projectColors.length];
-
-        // Construction du contenu HTML
         let interactiveSection = '';
         if (project.interactiveMap) {
             const btnLabel = project.buttonText || "Voir la visualisation";
             const contentType = project.type || 'iframe'; 
-            
-            // Bouton coloré
             interactiveSection = `
                 <div style="margin-top: 30px;">
                     <button class="btn-interactive" 
@@ -553,24 +539,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>`;
         }
 
-        const highlightsList = project.highlights.map(h => {
-            return `<li style="--bullet-color: ${accentColor}">${h}</li>`;
-        }).join('');
+        const highlightsList = project.highlights.map(h => `<li style="--bullet-color: ${accentColor}">${h}</li>`).join('');
+        const fullTech = project.tech.map(t => `<span style="background: ${accentColor}15; color: ${accentColor}; border: 1px solid ${accentColor}30; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600;">${t}</span>`).join('');
 
-        const fullTech = project.tech.map(t => {
-            return `<span style="
-                background: ${accentColor}15; 
-                color: ${accentColor}; 
-                border: 1px solid ${accentColor}30;
-                padding: 6px 12px; 
-                border-radius: 6px; 
-                font-size: 0.8rem; 
-                font-weight: 600;">${t}</span>`;
-        }).join('');
-
-        const styleInjection = `<style>
-            .modal-details-highlights li::before { color: ${accentColor}; }
-        </style>`;
+        const styleInjection = `<style>.modal-details-highlights li::before { color: ${accentColor}; }</style>`;
 
         modalDetailsView.innerHTML = `
             ${styleInjection}
@@ -580,9 +552,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="modal-details-tech">${fullTech}</div>
             </div>
             <div class="modal-details-body">
-                <div class="modal-details-desc">
-                    <p>${project.description}</p>
-                </div>
+                <div class="modal-details-desc"><p>${project.description}</p></div>
                 <div class="modal-details-highlights" style="background: ${accentColor}08;">
                     <h4 style="color: ${accentColor}; opacity: 0.8;">Points Techniques Clés</h4>
                     <ul>${highlightsList}</ul>
@@ -590,34 +560,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
         `;
-
         modalDetailsView.style.display = 'block';
     }
 
-    // --- FONCTION 2 : Ouvrir la vue MÉDIA (Interactive/Vidéo) ---
     function openMediaModal(contentSrc, type) {
         modalDetailsView.style.display = 'none';
         modalMediaView.style.display = 'flex';
-        
         if(btnBackFloating) btnBackFloating.style.display = 'flex';
 
         if (modalFrame) { modalFrame.src = ""; modalFrame.style.display = 'none'; }
         const existingVideo = document.getElementById('dynamic-video');
-        if (existingVideo) { existingVideo.remove(); }
+        if (existingVideo) existingVideo.remove();
         const existingImg = document.getElementById('dynamic-image');
         if (existingImg) existingImg.remove();
 
-        // On affiche le loader ici seulement car il y a chargement réseau
         if (modalLoader) modalLoader.style.display = 'flex';
 
-        // --- GESTION DE L'AVERTISSEMENT MOBILE ---
-        // On vérifie si on est sur mobile ET si c'est un contenu interactif (iframe/map)
-        // ET surtout, on vérifie si l'utilisateur ne l'a pas déjà fermé !
         if (window.innerWidth < 768 && type !== 'video' && type !== 'image') {
             const dismissed = sessionStorage.getItem('mobileWarningDismissed');
-            if (mobileWarningPopup && !dismissed) {
-                mobileWarningPopup.style.display = 'flex';
-            }
+            if (mobileWarningPopup && !dismissed) mobileWarningPopup.style.display = 'flex';
         }
 
         const targetTitle = document.getElementById('modal-media-title');
@@ -662,21 +623,16 @@ document.addEventListener('DOMContentLoaded', () => {
             modalFrame.parentNode.insertBefore(img, modalFrame);
 
         } else {
-            // CAS DE LA CARTE INTERACTIVE (HTML/IFRAME)
             if (targetTitle) targetTitle.innerText = "Visualisation Interactive";
             if (mapControls) mapControls.style.display = 'flex'; 
             if (modalInstruction) modalInstruction.style.display = 'block';
             
             modalFrame.style.opacity = "0"; 
             modalFrame.style.display = 'block';
-            
-            // Appel de la fonction globale pour gérer le contenu initial de l'iframe
-            // Note: On utilise changeMap pour initialiser
             window.changeMap(contentSrc);
         }
     }
 
-    // Gestionnaire de clic délégué pour le bouton interactif DANS la modale
     document.addEventListener('click', (e) => {
         if (e.target.classList.contains('btn-interactive')) {
             e.preventDefault();
@@ -688,16 +644,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function closeModalFunc() {
         modal.classList.remove('show');
-        setTimeout(() => { 
-            modal.style.display = 'none'; 
-            clearModalContent(); 
-        }, 300);
+        setTimeout(() => { modal.style.display = 'none'; clearModalContent(); }, 300);
     }
 
     if (closeModal) closeModal.addEventListener('click', closeModalFunc);
     window.addEventListener('click', (e) => { if (e.target == modal) closeModalFunc(); });
 
-    // Fonction globale pour le changement de map (boutons en haut de la modale média)
     window.changeMap = function(url) {
         const existingVideo = document.getElementById('dynamic-video');
         if (existingVideo) existingVideo.remove();
@@ -709,19 +661,12 @@ document.addEventListener('DOMContentLoaded', () => {
         modalFrame.style.display = 'block';
         modalFrame.src = url;
 
-        // --- GESTION DE L'INSTRUCTION DYNAMIQUE ---
-        // On récupère l'élément d'instruction dans la modale
         const instructionEl = document.querySelector('.modal-instruction');
-        
         if (instructionEl) {
-            // Liste des cartes nécessitant le clic droit (Pan)
-            // On vérifie si l'URL contient les mots clés des cartes complexes
             if (url.includes('carte_US_par_etat') || url.includes('carte_US_par_région')) {
-                // Instruction SPÉCIALE pour les cartes 3D/Complexes (SANS EMOJI)
                 instructionEl.innerHTML = "<strong>Astuce :</strong> Maintenez le <strong>clic droit</strong> pour déplacer la carte (Pan).";
                 instructionEl.style.display = 'block';
             } else {
-                // Instruction STANDARD pour les autres graphes
                 instructionEl.innerText = "Interagissez avec le graphique pour voir les détails.";
             }
         }

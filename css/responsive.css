@@ -35,8 +35,9 @@
         justify-content: center; 
         align-items: center;
         
-        /* SUPPRESSION DU PADDING QUI DÉCALAIT TOUT VERS LE BAS */
-        padding-top: 0; 
+        /* AJUSTEMENT RAFALE : On pousse le texte vers le bas */
+        /* 15vh correspond à 15% de la hauteur de l'écran, laissant la place à l'avion en haut */
+        padding-top: 15vh; 
         padding-bottom: 20px;
         
         /* Assure que le texte reste visible au-dessus de tout */

@@ -504,12 +504,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function clearModalContent() {
+        // Nettoyage standard de l'iframe
         if (modalFrame) { 
-            // NETTOYAGE AGRESSIF DE L'IFRAME POUR LIBÉRER LA MÉMOIRE
             modalFrame.src = "about:blank"; 
             modalFrame.style.display = 'none'; 
+            // Réinitialiser les styles potentiels
+            modalFrame.style.width = "";
+            modalFrame.style.height = "";
+            modalFrame.style.transform = "";
+            modalFrame.style.marginBottom = "";
+            modalFrame.style.pointerEvents = "auto";
         }
         
+        // Suppression des images de remplacement (Mobile)
+        const existingStaticImg = document.getElementById('static-map-image');
+        if (existingStaticImg) existingStaticImg.remove();
+
         const existingVideo = document.getElementById('dynamic-video');
         if (existingVideo) { existingVideo.pause(); existingVideo.remove(); }
         const existingImg = document.getElementById('dynamic-image');
@@ -651,9 +661,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             // CHARGEMENT STANDARD (Desktop ou Video/Image)
             
-            // OPTIMISATION : Si c'est Desktop mais que c'est une carte lourde, on peut aussi pauser
-            // Mais pour l'instant on garde le comportement desktop fluide
-            
             if (modalLoader) modalLoader.style.display = 'flex';
 
             const targetTitle = document.getElementById('modal-media-title');
@@ -736,15 +743,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Ajout du paramètre 'forceLoad' (booléen)
     window.changeMap = function(url, forceLoad = false) {
         
-        // Néttoyage systématique
+        // Néttoyage systématique des médias précédents
         const existingVideo = document.getElementById('dynamic-video');
         if (existingVideo) existingVideo.remove();
         const existingImg = document.getElementById('dynamic-image');
         if (existingImg) existingImg.remove();
+        const existingStaticImg = document.getElementById('static-map-image');
+        if (existingStaticImg) existingStaticImg.remove();
         
         // --- LOGIQUE DE BASCULEMENT DE CARTE (Switching maps) ---
-        // Si on est sur mobile, qu'on clique sur un bouton de changement de carte
-        // ET que ce n'est pas un chargement forcé (via le bouton "J'ai compris")
         const isMobile = window.innerWidth < 768;
         if (isMobile && !forceLoad) {
             // On intercepte le changement
@@ -759,40 +766,65 @@ document.addEventListener('DOMContentLoaded', () => {
             pauseBackgroundAnimations();
         }
 
-        // Si on arrive ici, c'est soit Desktop, soit un chargement forcé (autorisé)
-        if (modalLoader) modalLoader.style.display = 'flex';
-        modalFrame.style.opacity = "0";
-        modalFrame.style.display = 'block';
-        modalFrame.src = url;
+        // --- GESTION DU REMPLACEMENT PAR IMAGE SUR MOBILE ---
+        // Si on est sur mobile ET qu'il s'agit des cartes lourdes Pydeck
+        if (isMobile && (url.includes('carte_US_par_etat') || url.includes('carte_US_par_région'))) {
+            // 1. On cache le loader
+            if (modalLoader) modalLoader.style.display = 'flex'; // On montre le loader pendant le chargement de l'image
+            
+            // 2. On cache l'iframe pour être sûr
+            modalFrame.style.display = 'none';
+            modalFrame.src = "about:blank"; // On décharge l'iframe
 
-        // --- GESTION DU STYLE MOBILE SPÉCIFIQUE ---
-        // Réinitialisation des styles inline pour laisser le CSS (responsive.css) gérer par défaut
-        modalFrame.style.width = "";
-        modalFrame.style.height = "";
-        modalFrame.style.transform = "";
-        modalFrame.style.marginBottom = "";
-        modalFrame.style.pointerEvents = "auto"; // Default
-
-        if (isMobile) {
-            // 1. Figer les interactions pour les cartes lourdes
-            if (url.includes('carte_US_par_etat') || url.includes('carte_US_par_région')) {
-                modalFrame.style.pointerEvents = "none";
+            // 3. On détermine quelle image charger
+            let imgSrc = '';
+            if (url.includes('carte_US_par_etat')) {
+                imgSrc = 'assets/etat.jpg';
+            } else if (url.includes('carte_US_par_région')) {
+                imgSrc = 'assets/compte.jpg';
             }
 
-            // 2. FIX CENTRAGE SPÉCIFIQUE POUR "ETAT"
-            // Cette carte a besoin d'un champ de vision encore plus large (dézoom max)
-            if (url.includes('carte_US_par_etat')) {
-                modalFrame.style.width = "450%";        // Élargir la vue virtuelle encore plus
-                modalFrame.style.height = "250vh";      
-                modalFrame.style.transform = "scale(0.22)"; // Dézoomer fortement (1/4.5)
-                modalFrame.style.marginBottom = "-200vh"; // Compenser l'espace vide
+            // 4. Création de l'image de remplacement
+            const staticImg = document.createElement('img');
+            staticImg.id = 'static-map-image';
+            staticImg.src = imgSrc;
+            staticImg.style.width = "100%";
+            staticImg.style.height = "100%";
+            staticImg.style.objectFit = "contain"; 
+            staticImg.style.display = "block";
+            
+            staticImg.onload = () => { 
+                if (modalLoader) modalLoader.style.display = 'none'; 
+            };
+            
+            // Insertion avant l'iframe (dans le conteneur .modal-view)
+            // parentNode ici est #modal-media-view
+            modalFrame.parentNode.insertBefore(staticImg, modalFrame);
+
+        } else {
+            // --- CAS STANDARD (Desktop ou Autres Graphes Mobile) ---
+            if (modalLoader) modalLoader.style.display = 'flex';
+            modalFrame.style.display = 'block';
+            
+            // Reset styles iframe
+            modalFrame.style.width = "";
+            modalFrame.style.height = "";
+            modalFrame.style.transform = "";
+            modalFrame.style.marginBottom = "";
+            modalFrame.style.pointerEvents = "auto";
+
+            modalFrame.src = url;
+            
+            modalFrame.onload = () => {
+                modalFrame.style.opacity = "1";
+                if (modalLoader) modalLoader.style.display = 'none';
             }
         }
-        // ----------------------------------------------------
 
+        // --- GESTION DE L'INSTRUCTION ---
         const instructionEl = document.querySelector('.modal-instruction');
         if (instructionEl) {
-            // MODIFICATION : Masquer l'instruction pour les cartes figées sur mobile
+            // Sur mobile pour les cartes images : Pas d'instruction
             if (isMobile && (url.includes('carte_US_par_etat') || url.includes('carte_US_par_région'))) {
                 instructionEl.style.display = 'none';
             } 
@@ -801,16 +833,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 instructionEl.innerHTML = "<strong>Astuce :</strong> Maintenez le <strong>clic droit</strong> pour déplacer la carte (Pan).";
                 instructionEl.style.display = 'block';
             } 
-            // Cas par défaut (Mobile ou Desktop) pour les autres graphes interactifs
+            // Cas par défaut pour les autres graphes
             else {
                 instructionEl.innerText = "Interagissez avec le graphique pour voir les détails.";
                 instructionEl.style.display = 'block';
             }
-        }
-
-        modalFrame.onload = () => {
-            modalFrame.style.opacity = "1";
-            if (modalLoader) modalLoader.style.display = 'none';
         }
     };
 

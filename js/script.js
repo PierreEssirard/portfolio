@@ -765,13 +765,46 @@ document.addEventListener('DOMContentLoaded', () => {
         modalFrame.style.display = 'block';
         modalFrame.src = url;
 
+        // --- GESTION DU STYLE MOBILE SPÉCIFIQUE ---
+        // Réinitialisation des styles inline pour laisser le CSS (responsive.css) gérer par défaut
+        modalFrame.style.width = "";
+        modalFrame.style.height = "";
+        modalFrame.style.transform = "";
+        modalFrame.style.marginBottom = "";
+        modalFrame.style.pointerEvents = "auto"; // Default
+
+        if (isMobile) {
+            // 1. Figer les interactions pour les cartes lourdes
+            if (url.includes('carte_US_par_etat') || url.includes('carte_US_par_région')) {
+                modalFrame.style.pointerEvents = "none";
+            }
+
+            // 2. FIX CENTRAGE SPÉCIFIQUE POUR "ETAT"
+            // Cette carte a besoin d'un champ de vision encore plus large (dézoom max)
+            if (url.includes('carte_US_par_etat')) {
+                modalFrame.style.width = "450%";        // Élargir la vue virtuelle encore plus
+                modalFrame.style.height = "250vh";      
+                modalFrame.style.transform = "scale(0.22)"; // Dézoomer fortement (1/4.5)
+                modalFrame.style.marginBottom = "-200vh"; // Compenser l'espace vide
+            }
+        }
+        // ----------------------------------------------------
+
         const instructionEl = document.querySelector('.modal-instruction');
         if (instructionEl) {
-            if (!isMobile && (url.includes('carte_US_par_etat') || url.includes('carte_US_par_région'))) {
+            // MODIFICATION : Masquer l'instruction pour les cartes figées sur mobile
+            if (isMobile && (url.includes('carte_US_par_etat') || url.includes('carte_US_par_région'))) {
+                instructionEl.style.display = 'none';
+            } 
+            // Cas Desktop : cartes complexes => Clic Droit
+            else if (!isMobile && (url.includes('carte_US_par_etat') || url.includes('carte_US_par_région'))) {
                 instructionEl.innerHTML = "<strong>Astuce :</strong> Maintenez le <strong>clic droit</strong> pour déplacer la carte (Pan).";
                 instructionEl.style.display = 'block';
-            } else {
+            } 
+            // Cas par défaut (Mobile ou Desktop) pour les autres graphes interactifs
+            else {
                 instructionEl.innerText = "Interagissez avec le graphique pour voir les détails.";
+                instructionEl.style.display = 'block';
             }
         }
 

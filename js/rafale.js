@@ -18,15 +18,27 @@ camera.position.y = -0.2;
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
+
+// CRUCIAL : Gestion correcte des couleurs pour éviter l'effet "tout blanc"
+renderer.outputColorSpace = THREE.SRGBColorSpace; 
+renderer.toneMapping = THREE.ACESFilmicToneMapping; 
+renderer.toneMappingExposure = 1.0;
+
 container.appendChild(renderer.domElement);
 
 // --- 4. Lumières ---
-const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+// Réduction de l'intensité pour éviter la surexposition
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.8); // Réduit de 1.2 à 0.8
 scene.add(ambientLight);
 
-const dirLight = new THREE.DirectionalLight(0xffffff, 2);
+const dirLight = new THREE.DirectionalLight(0xffffff, 1.5); // Réduit de 2 à 1.5
 dirLight.position.set(5, 10, 7);
 scene.add(dirLight);
+
+// Ajout d'une lumière secondaire pour déboucher les ombres sans brûler l'image
+const fillLight = new THREE.DirectionalLight(0xeef0ff, 0.5);
+fillLight.position.set(-5, 0, -5);
+scene.add(fillLight);
 
 // --- 5. Chargement du Modèle & Logique de Barre de Progression ---
 let rafale;
@@ -97,6 +109,21 @@ loader.load(
     'dassault_rafale.glb', 
     (gltf) => {
         rafale = gltf.scene;
+        
+        // FIX MATÉRIAUX : On parcourt tous les éléments de l'avion
+        rafale.traverse((child) => {
+            if (child.isMesh) {
+                // On réduit l'effet métallique qui crée l'effet "miroir blanc"
+                // sans environnement à refléter.
+                if (child.material.metalness > 0.5) {
+                    child.material.metalness = 0.2; 
+                }
+                // On s'assure que l'objet n'est pas parfaitement lisse
+                if (child.material.roughness < 0.2) {
+                    child.material.roughness = 0.4;
+                }
+            }
+        });
         
         // Appliquer la configuration initiale
         updateRafaleResponsive();
